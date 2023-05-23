@@ -3,7 +3,7 @@
 
 
 inventory = []
-end_game_object = ""
+end_game_object = "Door"
 
 game_data_initialized = False
 
@@ -240,7 +240,7 @@ def do_options_menu():
 def display_main_menu():
     print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
-    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Quit\n")
+    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Quit\n\n\nVersion 0.1.0\n")
 
 
 def do_main_menu():
@@ -350,7 +350,7 @@ def reset_game():
         interactive_objects[-1].name = "Broken Door"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "B"
-        interactive_objects[-1].number_of_levels = 1
+        interactive_objects[-1].number_of_levels = 2
         interactive_objects[-1].keys.append("Doorknob")
         interactive_objects[-1].keys.append("\t")  # I'm a hacker, I know
         interactive_objects[-1].messages.append(
@@ -361,9 +361,8 @@ def reset_game():
             "You try to turn the doorknob, but the door is locked!")
         interactive_objects[-1].messages.append(
             "You open the door and exit the room!")
-        interactive_objects[-1].rewards.append("")
         interactive_objects[-1].enabled = True
-        interactive_objects[-1].selector_changes_to = "D"
+        interactive_objects[-1].selector_changes_to = "B"
         interactive_objects[-1].changes_to = "Door"
         interactive_objects[-1].change_level = 1
 
@@ -385,6 +384,7 @@ def reset_game():
         interactive_objects[-1].rewards.append("")
         interactive_objects[-1].rewards.append("Keypad")
         interactive_objects[-1].enabled = True
+        interactive_objects[-1].self_disables = True
 
         # set up the dresser parent object
         interactive_objects.append(interactive_object())
@@ -413,7 +413,7 @@ def reset_game():
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].messages.append("")
         interactive_objects[-1].messages.append(
-            "This drawer contains a journal. You open its pages, hoping to find something useful.  It contains entry after entry saying,\n\t\"Don't believe the message! Don't open the door!\"")
+            "This drawer contains a journal. You open its pages, hoping to find something useful.  It contains entry after entry saying,\n\n\t\"Don't believe the message! Don't open the door!\"")
         interactive_objects[-1].messages.append(
             "You consider the journal you found in the first drawer.  Could all this just be some kind of game?")
         interactive_objects[-1].keys.append("")
@@ -424,7 +424,7 @@ def reset_game():
         interactive_objects[-1].name = "Drawer 2"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "2"
-        interactive_objects[-1].number_of_levels = 2
+        interactive_objects[-1].number_of_levels = 1
         interactive_objects[-1].messages.append(
             "This drawer contains a false bottom that you cannot seem to remove. Finally, you notice a key hole.")
         interactive_objects[-1].messages.append(
@@ -445,7 +445,8 @@ def reset_game():
         interactive_objects[-1].messages.append("")
         interactive_objects[-1].messages.append(
             "You find a key in the third drawer! What could it be for?")
-        interactive_objects[-1].messages.append("")
+        interactive_objects[-1].messages.append(
+            "A second search through this drawer yeilds nothing.")
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].rewards.append("Key")
         interactive_objects[-1].enabled = False
@@ -469,6 +470,7 @@ def reset_game():
         interactive_objects[-1].rewards.append("")
         interactive_objects[-1].rewards.append("Doorknob")
         interactive_objects[-1].enabled = True
+        interactive_objects[-1].self_disables = True
 
         # set up the hole in
         interactive_objects.append(interactive_object())
@@ -521,7 +523,7 @@ def reset_game():
         interactive_objects[-1].name = "Step Ladder"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "S"
-        interactive_objects[-1].number_of_levels = 0
+        interactive_objects[-1].number_of_levels = 1
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].messages.append("")
         interactive_objects[-1].messages.append(
@@ -572,46 +574,74 @@ def manage_iteractable_use(i):
 
     print("\n")  # need some breaking room
     if interactive_objects[i].current_level < interactive_objects[i].number_of_levels:
+        # print("True 1")
         # if the key is in hand
         if interactive_objects[i].keys.__len__() < 1 or interactive_objects[i].keys.__len__() <= interactive_objects[i].current_level or (interactive_objects[i].keys.__len__() > interactive_objects[i].current_level and (interactive_objects[i].keys[interactive_objects[i].current_level] in inventory or interactive_objects[i].keys[interactive_objects[i].current_level] == "")):
+            # print("True 2")
+
             # if we have a valid message
             if interactive_objects[i].messages.__len__() > interactive_objects[i].current_level * 2 and interactive_objects[i].messages[interactive_objects[i].current_level * 2 + 1] != "":
+                # print("True 3")
+
                 print(
                     interactive_objects[i].messages[interactive_objects[i].current_level * 2 + 1])
             else:
+                # print("False 3")
+
                 print("WOKKA! Missing success message. Current level is " +
                       str(interactive_objects[i].current_level))
 
             # if we have a valid reward
             if interactive_objects[i].rewards.__len__() > interactive_objects[i].current_level and interactive_objects[i].rewards[interactive_objects[i].current_level] != "":
+                # print("True 4")
                 inventory.append(
                     interactive_objects[i].rewards[interactive_objects[i].current_level])
+            else:
+                pass
+                # print("False 4")
 
             if interactive_objects[i].enables.__len__() > interactive_objects[i].current_level and interactive_objects[i].enables[interactive_objects[i].current_level].__len__() > 0:
+                # print("True 5")
+
                 toggle_object(
                     interactive_objects[i].enables[interactive_objects[i].current_level])
+            else:
+                pass
+                # print("False 5")
 
             # advance the player to the next level
             interactive_objects[i].current_level += 1
 
         else:
+            # print("false 3")
             if interactive_objects[i].messages.__len__() > interactive_objects[i].current_level * 2 - 1 and interactive_objects[i].messages[(interactive_objects[i].current_level - 1) * 2] != "":
+                # print("true 6")
                 print(
                     interactive_objects[i].messages[interactive_objects[i].current_level * 2])
             else:
+                # print("false 6")
                 print(
                     f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}")
     else:
+        # print("false 1")
         print(interactive_objects[i].messages[-1])
 
     # if this objects name changes, then change its name
-    if interactive_objects[i].change_level != -1 and interactive_objects[i].change_level <= interactive_objects[i].current_level: 
+    if interactive_objects[i].change_level != -1 and interactive_objects[i].change_level <= interactive_objects[i].current_level:
+        # print("True 7")
         interactive_objects[i].name = interactive_objects[i].changes_to
         interactive_objects[i].selector = interactive_objects[i].selector_changes_to
+    else:
+        # print("False 7")
+        pass
 
     # if we don't want this object to exist anymore, take it off the list.
     if interactive_objects[i].current_level == interactive_objects[i].number_of_levels and interactive_objects[i].self_disables:
+        # print("True 8")
         interactive_objects[i].enabled = False
+    else:
+        # print("False 8")
+        pass
 
     input("\nPress Enter to Continue... \n")
 
@@ -651,27 +681,29 @@ def list_inventory_objects():
         result = "\t"
 
         for thing in inventory:
-            # empty or the shameful, dirty hack
-            if (result != "" and result != "\t"):
+            # empty list or the shameful, dirty hack
+            # if result != "":
+            if result != "\t" and thing != "\t":
                 result += ", "
                 result += thing
-
-        # if there's a comma at the beginning, slice it off...
-        if (result[0] == ","):
-            result = result[2:]
+            elif thing != "\t":
+                result += thing
 
         # slice off the trailing comma and space
-        if (result[-2] == ","):
-            result = result[0:len(result) - 3]
+        # if (len(result) > 1 and result[-2] == ","):
+        #    result = result[0:len(result) - 3]
+
         print(result)
 
 
 def win_game_messages():
-    print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\n He mirrors the look you give him and as the klaxon and recorded message stop, a voice declares\n\n\"I guess you'll just have to try again.\"")
+    print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the look you give him and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
+    input("\nPress enter ...")
 
 
 def lose_game_messages():
-    print("Your time is up. You experienec a thrill of horror and cry out in frustration!\n\n As you wait for death, the klaxon and recorded message end.  Another voice declares, \"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
+    print("Your time is up. You experienec a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
+    input("\nPress enter ...")
 
 
 def do_gameplay(new_game):
@@ -757,6 +789,7 @@ def mini_game_state_machine():
             break
 
         last_game_state = next_game_state
+
 
 # run the game
 mini_game_state_machine()
