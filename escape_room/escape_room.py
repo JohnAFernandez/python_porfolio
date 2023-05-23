@@ -238,14 +238,9 @@ def do_options_menu():
 
 
 def display_main_menu():
-    print("")
+    print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
-    print("")
-    print("\tA) New Game")
-    print("\tB) Load Game")
-    print("\tC) Options")
-    print("\tD) Quit")
-    print("")
+    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Quit\n")
 
 
 def do_main_menu():
@@ -608,9 +603,15 @@ def manage_iteractable_use(i):
                     f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}")
     else:
         print(interactive_objects[i].messages[-1])
-        # if we don't want this object to exist anymore, take it off the list.
-        if interactive_objects[i].self_disables:
-            interactive_objects[i].enabled = False
+
+    # if this objects name changes, then change its name
+    if interactive_objects[i].change_level <= interactive_objects[i].current_level: 
+        interactive_objects[i].name = interactive_objects[i].changes_to
+        interactive_objects[i].selector = interactive_objects[i].selector_changes_to
+
+    # if we don't want this object to exist anymore, take it off the list.
+    if interactive_objects[i].current_level == interactive_objects[i].number_of_levels and interactive_objects[i].self_disables:
+        interactive_objects[i].enabled = False
 
     input("\nPress Enter to Continue... \n")
 
@@ -760,5 +761,5 @@ def mini_game_state_machine():
 
         last_game_state = next_game_state
 
-
+# run the game
 mini_game_state_machine()
