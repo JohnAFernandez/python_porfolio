@@ -605,7 +605,7 @@ def manage_iteractable_use(i):
         print(interactive_objects[i].messages[-1])
 
     # if this objects name changes, then change its name
-    if interactive_objects[i].change_level <= interactive_objects[i].current_level: 
+    if interactive_objects[i].change_level != -1 and interactive_objects[i].change_level <= interactive_objects[i].current_level: 
         interactive_objects[i].name = interactive_objects[i].changes_to
         interactive_objects[i].selector = interactive_objects[i].selector_changes_to
 
@@ -700,11 +700,8 @@ def do_gameplay(new_game):
         while True:
             list_interactible_objects()
             list_inventory_objects()
-
-            print(f"\n{game_time} minutes to lethal dose...\n")
-
             gameplay_choice = input(
-                "What do you want to try?\n\nM) In-game menu\n")
+                f"\n{game_time} minutes to lethal dose...What do you want to try?\n\nM) In-game menu\n")
 
             if gameplay_choice.lower() == "m":
                 go_to_in_game_menu()
