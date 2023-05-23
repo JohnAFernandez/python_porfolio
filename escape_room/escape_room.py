@@ -12,7 +12,6 @@ autosave = True
 game_time = 60
 
 
-
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
 GAME_START_STATE = -1  # should be set to this value only when starting the program
@@ -24,9 +23,6 @@ EXIT_GAME_STATE = 4
 
 valid_game_states = ("GAME_START_STATE", "IN_GAME",
                      "IN_MAIN_MENU", "IN_GAME_MENU", "EXIT")
-
-
-
 
 
 def exit_game():
@@ -283,8 +279,6 @@ def do_main_menu():
             display_main_menu()
 
 
-
-
 def do_initial_gameplay_description():
     print("")
     print("")
@@ -328,9 +322,12 @@ class interactive_object:
         self.enables = []
         self.enabled = True
         self.self_disables = False
-        self.changes_to = ""    # maybe this section would be better if we just replaced with another interactable object
-        self.selector_changes_to = ""  # but if I upgrade to using graphics, then I can use the same coordinates.
-        self.change_level = -1  # Also, this may end up introducing fewer bugs overall, since I don't have to make sure another object works.
+        # maybe this section would be better if we just replaced with another Interactible object
+        self.changes_to = ""
+        # but if I upgrade to using graphics, then I can use the same coordinates.
+        self.selector_changes_to = ""
+        # Also, this may end up introducing fewer bugs overall, since I don't have to make sure another object works.
+        self.change_level = -1
 
 
 global interactive_objects
@@ -352,6 +349,65 @@ def reset_game():
         inventory.clear()
     else:
         game_data_initialized = True
+
+        # set up the broken doonknob
+        interactive_objects.append(interactive_object())
+        interactive_objects[-1].name = "Broken Door"
+        # print("Doing " + interactive_objects[-1].name)
+        interactive_objects[-1].selector = "B"
+        interactive_objects[-1].number_of_levels = 1
+        interactive_objects[-1].keys.append("Doorknob")
+        interactive_objects[-1].keys.append("\t")  # I'm a hacker, I know
+        interactive_objects[-1].messages.append(
+            "You examine the door closely. There are no hinges on this side and no significant gaps.\nDespite the missing doorknob, you cannot push the other side of the doorknob out.\nEven with tools, there's no way to access the openning mechanism.")
+        interactive_objects[-1].messages.append(
+            "The doorknob clicks in place!")
+        interactive_objects[-1].messages.append(
+            "You try to turn the doorknob, but the door is locked!")
+        interactive_objects[-1].messages.append(
+            "You open the door and exit the room!")
+        interactive_objects[-1].rewards.append("")
+        interactive_objects[-1].enabled = True
+        interactive_objects[-1].selector_changes_to = "D"
+        interactive_objects[-1].changes_to = "Door"
+        interactive_objects[-1].change_level = 1
+
+        # set up the chest
+        interactive_objects.append(interactive_object())
+        interactive_objects[-1].name = "Chest"
+        # print("Doing " + interactive_objects[-1].name)
+        interactive_objects[-1].selector = "C"
+        interactive_objects[-1].number_of_levels = 2
+        interactive_objects[-1].keys.append("")
+        interactive_objects[-1].messages.append("")
+        interactive_objects[-1].messages.append(
+            "You go for the chest and are happy to find it unlocked. But you end up disappointed, since it's empty.")
+        interactive_objects[-1].messages.append("")
+        interactive_objects[-1].messages.append(
+            "You decide to also look under and behind the chest. Behind it is a keypad!")
+        interactive_objects[-1].messages.append(
+            "A third search of the chest and the area around it yields nothing.")
+        interactive_objects[-1].rewards.append("")
+        interactive_objects[-1].rewards.append("Keypad")
+        interactive_objects[-1].enabled = True
+
+        # set up the dresser parent object
+        interactive_objects.append(interactive_object())
+        interactive_objects[-1].name = "Dresser"
+        # print("Doing " + interactive_objects[-1].name)
+        interactive_objects[-1].selector = "D"
+        interactive_objects[-1].number_of_levels = 1
+        interactive_objects[-1].keys.append("")
+        interactive_objects[-1].messages.append("")
+        interactive_objects[-1].messages.append(
+            "You see three drawers in the dresser.  Nothing has been placed on top of it.")
+        interactive_objects[-1].rewards.append("")
+        interactive_objects[-1].enabled = True
+        interactive_objects[-1].enables.append([])
+        interactive_objects[-1].enables[-1].append("Drawer 1")
+        interactive_objects[-1].enables[-1].append("Drawer 2")
+        interactive_objects[-1].enables[-1].append("Drawer 3")
+        interactive_objects[-1].self_disables = True
 
         # set up drawer 1
         interactive_objects.append(interactive_object())
@@ -392,67 +448,12 @@ def reset_game():
         interactive_objects[-1].number_of_levels = 1
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].messages.append("")
-        interactive_objects[-1].messages.append("You find a key in the third drawer! What could it be for?")
+        interactive_objects[-1].messages.append(
+            "You find a key in the third drawer! What could it be for?")
         interactive_objects[-1].messages.append("")
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].rewards.append("Key")
         interactive_objects[-1].enabled = False
-
-        # set up the broken doonknob
-        interactive_objects.append(interactive_object())
-        interactive_objects[-1].name = "Broken Door"
-        # print("Doing " + interactive_objects[-1].name)
-        interactive_objects[-1].selector = "B"
-        interactive_objects[-1].number_of_levels = 1
-        interactive_objects[-1].keys.append("Doorknob")
-        interactive_objects[-1].keys.append("\t")  # I'm a hacker, I know
-        interactive_objects[-1].messages.append(
-            "You examine the door closely. There are no hinges on this side and no significant gaps.\nDespite the missing doorknob, you cannot push the other side of the doorknob out.\nEven with tools, there's no way to access the openning mechanism.")
-        interactive_objects[-1].messages.append(
-            "The doorknob clicks in place!")
-        interactive_objects[-1].messages.append(
-            "You try to turn the doorknob, but the door is locked!")
-        interactive_objects[-1].messages.append("You open the door and exit the room!")
-        interactive_objects[-1].rewards.append("")
-        interactive_objects[-1].enabled = True
-
-        # set up the chest
-        interactive_objects.append(interactive_object())
-        interactive_objects[-1].name = "Chest"
-        # print("Doing " + interactive_objects[-1].name)
-        interactive_objects[-1].selector = "C"
-        interactive_objects[-1].number_of_levels = 2
-        interactive_objects[-1].keys.append("")
-        interactive_objects[-1].messages.append("")
-        interactive_objects[-1].messages.append(
-            "You go for the chest and are happy to find it unlocked. But you end up disappointed, since it's empty.")
-        interactive_objects[-1].messages.append("")
-        interactive_objects[-1].messages.append(
-            "You decide to also look under and behind the chest. Behind it is a keypad!")
-        interactive_objects[-1].messages.append(
-            "A third search of the chest and the area around it yields nothing.")
-        interactive_objects[-1].rewards.append("")
-        interactive_objects[-1].rewards.append("Keypad")
-        interactive_objects[-1].enabled = True
-
-        # set up the dresser parent object
-        interactive_objects.append(interactive_object())
-        interactive_objects[-1].name = "Dresser"
-        # print("Doing " + interactive_objects[-1].name)
-        interactive_objects[-1].selector = "D"
-        interactive_objects[-1].number_of_levels = 1
-        interactive_objects[-1].keys.append("")
-        interactive_objects[-1].messages.append("")
-        interactive_objects[-1].messages.append(
-            "You see three drawers in the dresser.  Nothing has been placed on top of it.")
-        interactive_objects[-1].rewards.append("")
-        interactive_objects[-1].enabled = True
-        interactive_objects[-1].enables.append([])
-        interactive_objects[-1].enables[-1].append("Drawer 1")
-        interactive_objects[-1].enables[-1].append("Drawer 2")
-        interactive_objects[-1].enables[-1].append("Drawer 3")
-        interactive_objects[-1].self_disables = True
-
 
         # set up the ceiling fan
         interactive_objects.append(interactive_object())
@@ -496,6 +497,7 @@ def reset_game():
         interactive_objects[-1].rewards.append("\t")
         interactive_objects[-1].enabled = True
         interactive_objects[-1].self_disables = True
+        interactive_objects[-1].selector_changes_to = "K"
         interactive_objects[-1].changes_to = "Keypad"
         interactive_objects[-1].change_level = 1
 
@@ -548,23 +550,6 @@ def reset_game():
         interactive_objects[-1].rewards.append("")
         interactive_objects[-1].enabled = True
         interactive_objects[-1].self_disables = True
-
-#        for i in range(0, interactive_objects.__len__(), 1):
-#            print(interactive_objects[i].name)
-#        for i in range(0, interactive_objects.__len__(), 1):
-#            print(interactive_objects[i].selector)
-#        for i in range(0, interactive_objects.__len__(), 1):
-#            print(interactive_objects[i].number_of_levels)
-#        for i in range(0, interactive_objects.__len__(), 1):
-# print(interactive_objects[i].keys)
- #       for i in range(0, interactive_objects.__len__(), 1):
- #           print(interactive_objects[i].messages)
-  #      for i in range(0, interactive_objects.__len__(), 1):
-   #         print(interactive_objects[i].rewards)
-    #    for i in range(0, interactive_objects.__len__(), 1):
-     #       print(interactive_objects[i].enabled)
-      #  for i in range(0, interactive_objects.__len__(), 1):
-       #     print(interactive_objects[i].enables)
 
 
 def evaluate_victory_condition():
@@ -652,7 +637,7 @@ def select_the_object(string):
     return -1
 
 
-def list_interactable_objects():
+def list_interactible_objects():
     print("You see the following things to examine:\n")
     for thing in interactive_objects:
         if thing.enabled == True:
@@ -712,12 +697,13 @@ def do_gameplay(new_game):
             break
 
         while True:
-            list_interactable_objects()
+            list_interactible_objects()
             list_inventory_objects()
 
             print(f"\n{game_time} minutes to lethal dose...\n")
 
-            gameplay_choice = input("What do you want to try?\n\nM) In-game menu\n")
+            gameplay_choice = input(
+                "What do you want to try?\n\nM) In-game menu\n")
 
             if gameplay_choice.lower() == "m":
                 go_to_in_game_menu()
@@ -735,9 +721,10 @@ def do_gameplay(new_game):
                 manage_iteractable_use(i)
 
             break
-        
+
         if exit_state == True:
             break
+
 
 def mini_game_state_machine():
 
@@ -751,8 +738,8 @@ def mini_game_state_machine():
                        GAME_START_STATE and next_game_state < 5)
 
         # Uncomment to debug the game state.
-        #print("Exiting game state ", last_game_state)
-        #print("Entering game state ", next_game_state)
+        # print("Exiting game state ", last_game_state)
+        # print("Entering game state ", next_game_state)
 
         if next_game_state == MAIN_MENU_STATE:
             if last_game_state == GAME_START_STATE:
@@ -772,5 +759,6 @@ def mini_game_state_machine():
             break
 
         last_game_state = next_game_state
+
 
 mini_game_state_machine()
