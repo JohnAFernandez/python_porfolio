@@ -1,6 +1,7 @@
 # Copyright (c) 2023, John Andrew Fernandez
 # All rights reserved.
 
+import os
 
 inventory = []
 end_game_object = "Door"
@@ -23,6 +24,7 @@ EXIT_GAME_STATE = 4
 
 SAVE_GAME_VERSION = 1
 SAVE_GAME_VALIDATION_STRING = "JFERSG"
+SAVE_GAME_EXTENSION = ".ersg"
 
 valid_game_states = ("GAME_START_STATE", "IN_GAME",
                      "IN_MAIN_MENU", "IN_GAME_MENU", "EXIT")
@@ -67,6 +69,7 @@ def display_in_game_menu():
     print("F) Return To Game")
     print("")
 
+
 def save_game(manual_save):
     global interactive_objects
     global game_time
@@ -92,7 +95,8 @@ def save_game(manual_save):
     filename += ".ersg"
 
     f = open(filename, "w")
-    f.write(f"{SAVE_GAME_VALIDATION_STRING}v{str(SAVE_GAME_VERSION)}\n{str(game_time)}\n")
+    f.write(
+        f"{SAVE_GAME_VALIDATION_STRING}v{str(SAVE_GAME_VERSION)}\n{str(game_time)}\n")
     f.write(str(len(interactive_objects)))
     f.write("\n")
     for thing in interactive_objects:
@@ -103,18 +107,55 @@ def save_game(manual_save):
         else:
             f.write(",0")
         f.write("\n")
-    
+
     f.write(str(len(inventory)))
     for thing in inventory:
         f.write(thing)
-        f.write("\n")
+        f.write("\n\n")
     f.close()
 
     return True
 
-    
+
+def load_game():
+    the_list = os.listdir()
+
+    # yeah, I know that looks scary.  Reverse iterate to not invalidate the index x
+    for x in range(len(the_list), 0, -1):
+        # make sure we have enough digits to check the extension, then get a slice of the last portion
+        if not (len(the_list[x]) > 5 and the_list[x][-5:-1:-1] == SAVE_GAME_EXTENSION):
+            the_list.pop(x)
+
+    if len(the_list) < 1:
+        print("No files to load.")
+        return False
+
+    print("Files to choose from:\n")
+    x = 0
+    for item in the_list:
+        print(f"{x}) {item[0:len(item)-5]}")
+
+    fail_count = 0
+    while True:
+        choice = input("\n")
+        if choice.isnumeric():
+            file_index = int(choice)
+
+            if choice > -1 and choice < len(the_list):
+                break
+
+        fail_count += 1
+
+        if fail_count > 3:
+            print("User did not choose a valid file, aborting load.")
+            return False
+
+    return True
+
 # written, not tested
 # handle the in game menu
+
+
 def do_in_game_menu():
     display_in_game_menu()
 
@@ -301,7 +342,7 @@ def do_main_menu():
             break
 
         elif user_choice.lower() == "b":
-            # !! success = load_game()
+            success = load_game()
 
             # !! if success
             # !! go_to_gameplay()
@@ -344,7 +385,8 @@ def do_initial_gameplay_description():
 class interactive_object:
     def __init__(self):
         # tracker "flags", iow what has happened to this object already?
-        self.name = "" # !! FIX ME! Second game has new name instead of old name....
+        # !! FIX ME! Second game has new name instead of old name....
+        self.name = ""
         self.selector = ""
         # every level that has a reward, needs a level above it to receive the reward
         self.number_of_levels = 0
@@ -725,13 +767,15 @@ def select_the_object(string):
 
     return -1
 
+
 def get_interactive_object(name):
     global interactive_objects
     for x in range(0, len(interactive_objects), 1):
         if name == interactive_objects[x].name:
             return x
-    
+
     return -1
+
 
 def list_interactible_objects():
     global interactive_objects
@@ -740,6 +784,7 @@ def list_interactible_objects():
         if thing.enabled == True:
             print("\t" + thing.selector + ") " + thing.name)
 
+
 def list_alternate_choice():
     global interactive_objects
     drawer = get_interactive_object("Drawer 1")
@@ -747,7 +792,7 @@ def list_alternate_choice():
     if drawer < 0 or drawer > len(interactive_objects):
         print("WOKKA! MISSING Object.  If you're the player, you're screwed!")
         return
-    
+
     # has the journal been fully explored?
     if interactive_objects[drawer].current_level == interactive_objects[drawer].number_of_levels:
         print("\n\tJ) Consider the journal")
@@ -786,7 +831,7 @@ def lose_game_messages():
 
 
 def do_rejection_loop():
-    global game_time 
+    global game_time
 
     print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, personal details and relationships...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
@@ -794,11 +839,12 @@ def do_rejection_loop():
     print("\nThe entries in the journal were hastily written, as if the writer knew they had almost no time. But if all this is real, then you need to get out of here as soon as possible.")
     print("\nIn a rush you decide to...")
     while True:
-        choice = input("\n\tA) Continue your attempts to get through the door.\n\tB) Yell at the ceiling that you aren't going to play this game anymore!\n")
+        choice = input(
+            "\n\tA) Continue your attempts to get through the door.\n\tB) Yell at the ceiling that you aren't going to play this game anymore!\n")
 
         if choice.lower() == "a":
             return False
-        else: 
+        else:
             break
 
     print("\nYou sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
@@ -813,14 +859,15 @@ def do_rejection_loop():
         if (choice2.lower() == "y"):
             game_time -= 1
             total_wait_time += 1
-            print(f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose")
-        elif(choice2.lower() == "n"):
+            print(
+                f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose")
+        elif (choice2.lower() == "n"):
             return False
-        
-    print("\nYou're winner!") # !! write the end game messages!!
+
+    print("\nYou're winner!")  # !! write the end game messages!!
     input("\n...")
     return True
-        
+
 
 def do_gameplay(new_game):
     global inventory
@@ -844,7 +891,6 @@ def do_gameplay(new_game):
             lose_game_messages()
             go_to_main_menu()
             break
-
 
         while True:
             list_interactible_objects()
@@ -912,6 +958,7 @@ def mini_game_state_machine():
             break
 
         last_game_state = next_game_state
+
 
 # run the game
 mini_game_state_machine()
