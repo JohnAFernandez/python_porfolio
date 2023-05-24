@@ -409,11 +409,15 @@ def reset_game():
         interactive_objects[-1].name = "Drawer 1"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "1"
-        interactive_objects[-1].number_of_levels = 1
+        interactive_objects[-1].number_of_levels = 2
         interactive_objects[-1].keys.append("")
         interactive_objects[-1].messages.append("")
         interactive_objects[-1].messages.append(
             "This drawer contains a journal. You open its pages, hoping to find something useful.  It contains entry after entry saying,\n\n\t\"Don't believe the message! Don't open the door!\"")
+        interactive_objects[-1].messages.append(
+            "You consider the journal you found in the first drawer.  Could all this just be some kind of game?")
+        interactive_objects[-1].messages.append(
+            "You consider the journal you found in the first drawer.  Could all this just be some kind of game?")
         interactive_objects[-1].messages.append(
             "You consider the journal you found in the first drawer.  Could all this just be some kind of game?")
         interactive_objects[-1].keys.append("")
@@ -695,8 +699,8 @@ def list_alternate_choice():
         return
     
     # has the journal been fully explored?
-    if interactive_objects[drawer].level == interactive_objects[drawer].number_of_levels:
-        print("J) Consider the journal")
+    if interactive_objects[drawer].current_level == interactive_objects[drawer].number_of_levels:
+        print("\n\tJ) Consider the journal")
 
 
 def list_inventory_objects():
@@ -734,36 +738,37 @@ def lose_game_messages():
 def do_rejection_loop():
     global game_time 
 
-    print("You sit and think about your situation.  You still have no memory of how you got here. You can remember your name, personal details and relationships...")
+    print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, personal details and relationships...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
-    input("Press enter...")
+    input("\nPress enter...")
     print("\nThe entries in the journal were hastily written, as if the writer knew they had almost no time. But if all this is real, then you need to get out of here as soon as possible.")
     print("\nIn a rush you decide to...")
     while True:
-        choice = input("\n\tA) Continue your attempts to get through the door.\n\tB) Yell at the ceiling that you aren't going to play this game anymore!")
+        choice = input("\n\tA) Continue your attempts to get through the door.\n\tB) Yell at the ceiling that you aren't going to play this game anymore!\n")
 
         if choice.lower() == "a":
             return False
         else: 
             break
 
-    print("You sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
-    print("You say this with a steady voice and no trace of fear marks your features.\n")
+    print("\nYou sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
+    print("You say this with a steady voice, and no trace of fear marks your features.\n")
     print("Nothing happens.")
 
     total_wait_time = 1
 
-    while total_wait_time < 10 and game_time > 5:
+    while total_wait_time < 9 and game_time > 5:
         choice2 = input("\nKeep waiting? (Y/N)")
 
         if (choice2.lower() == "y"):
             game_time -= 1
-            total_wait_time += 10
+            total_wait_time += 1
             print(f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose")
         elif(choice2.lower() == "n"):
             return False
         
-    print("You're winner!")
+    print("\nYou're winner!")
+    input("\n...")
     return True
         
 
@@ -793,6 +798,7 @@ def do_gameplay(new_game):
 
         while True:
             list_interactible_objects()
+            list_alternate_choice()
             list_inventory_objects()
             gameplay_choice = input(
                 f"\n{game_time} minutes to lethal dose...What do you want to try?\n\nM) In-game menu\n")
