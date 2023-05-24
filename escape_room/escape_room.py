@@ -9,7 +9,7 @@ game_data_initialized = False
 
 autosave = True
 
-game_time = 60
+game_time = 45
 
 
 # Game State Management Variables
@@ -293,7 +293,7 @@ def do_initial_gameplay_description():
 #    print("")
     input("Press Any Key...")
     print("")
-    print("A voice thunders through the speakers, \"All personnel evacuate immediately. Reactor leak! 1 hour to lethal dose!\"")
+    print("A voice thunders through the speakers, \"All personnel evacuate immediately. Reactor leak! 45 minutes to lethal dose!\"")
     print("The voice repeats itself unendingly, and you realize it is a recorded message.")
     print("You bring your arm up to look at a watch you don't recognize and mark how much time you have to escape....")
     print("")
@@ -481,7 +481,7 @@ def reset_game():
         interactive_objects[-1].messages.append(
             "Closely examining the hole in the wall, you find it has a wire ending in a usb port.")
         interactive_objects[-1].messages.append(
-            "You connect the keypad's USB cord into the port in the wall. Then you place the keypad in the wall. It fits snugly, and a green light turns on -- Now that is progress!")
+            "You connect the keypad's USB cord into the port in the hole. Then you place the keypad in the wall. It fits snugly, and a green light turns on -- Now that is progress!")
         interactive_objects[-1].messages.append(
             "You move to press the numbers on the keypad, but you don't know what keys to press.")
         interactive_objects[-1].messages.append(
@@ -697,7 +697,8 @@ def list_inventory_objects():
 
 
 def win_game_messages():
-    print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the look you give him and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
+    print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
+    print("\nSuddenly, you black out.")
     input("\nPress enter ...")
 
 
