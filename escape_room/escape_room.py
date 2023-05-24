@@ -7,7 +7,7 @@ end_game_object = "Door"
 
 game_data_initialized = False
 
-autosave = True
+autosave_enabled = True
 
 game_time = 45
 loss_counter = 0
@@ -20,6 +20,9 @@ NEW_GAME_STATE = 1
 GAMEPLAY_STATE = 2
 GAME_MENU_STATE = 3
 EXIT_GAME_STATE = 4
+
+SAVE_GAME_VERSION = 1
+SAVE_GAME_VALIDATION_STRING = "JFERSG"
 
 valid_game_states = ("GAME_START_STATE", "IN_GAME",
                      "IN_MAIN_MENU", "IN_GAME_MENU", "EXIT")
@@ -64,7 +67,52 @@ def display_in_game_menu():
     print("F) Return To Game")
     print("")
 
+def save_game(manual_save):
+    global interactive_objects
+    global game_time
 
+    if manual_save:
+        failcount = 0
+        while True:
+            filename = input("\nChoose a filename: ").lower()
+
+            if len(filename) < 1:
+                print("Filename cannot be empty.")
+                failcount += 1
+
+                if failcount > 3:
+                    print("Too many bad attempts, aborting save!")
+                    return False
+            else:
+                break
+
+    else:
+        filename = "autosave"
+
+    filename += ".ersg"
+
+    f = open(filename, "w")
+    f.write(f"{SAVE_GAME_VALIDATION_STRING}v{str(SAVE_GAME_VERSION)}\n{str(game_time)}\n")
+    f.write(str(len(interactive_objects)))
+    f.write("\n")
+    for thing in interactive_objects:
+        f.write(thing.name + ",")
+        f.write(str(thing.current_level))
+        if thing.enabled:
+            f.write(",1")
+        else:
+            f.write(",0")
+        f.write("\n")
+    
+    f.write(str(len(inventory)))
+    for thing in inventory:
+        f.write(thing)
+        f.write("\n")
+    f.close()
+
+    return True
+
+    
 # written, not tested
 # handle the in game menu
 def do_in_game_menu():
@@ -81,10 +129,8 @@ def do_in_game_menu():
 
         # Save the game
         if user_choice.lower() == "a":
-            print("")
-            print("NOT SUPPORTED YET")
             invalid_counter = 0
-            # !!saved = save_game(true)
+            saved = save_game(True)
 
         # load the game
         elif user_choice.lower() == "b":
@@ -95,7 +141,7 @@ def do_in_game_menu():
                 backup_save_choice = input(
                     "Would you like to save before loading? (Y/N) ")
                 if backup_save_choice.lower() == "y" or backup_save_choice.lower() == "yes":
-                    # !! saved = save_game(true)
+                    saved = save_game(True)
                     if not saved:
                         print("Aborted load due to save failure. (not supported yet)")
                         # save function will have its own warning message.
@@ -131,7 +177,7 @@ def do_in_game_menu():
                     "Would you like to save before exiting? Y/N ")
 
                 if (backup_save_choice.lower() == "y" or backup_save_choice.lower() == "yes"):
-                    # !! saved = save_game(true)
+                    saved = save_game(True)
 
                     if not saved:
                         print(
@@ -150,7 +196,7 @@ def do_in_game_menu():
                     "Would you like to save before quitting? Y/N ")
 
                 if backup_save_choice.lower() == "y" or backup_save_choice.lower() == "yes":
-                    # !! saved = save_game(true)
+                    saved = save_game(True)
                     if not saved:
                         print("Aborted game ending, due to save failure.")
                         # save function will have its own warning message.
@@ -177,8 +223,8 @@ def do_in_game_menu():
             if invalid_counter > 2:
                 invalid_counter = 0  # remove when other code is in, it's just here to stop erroring
                 # autosave?
-                # !! save_game(true)
-                # !! go_to_gameplay()
+                save_game(False)
+                go_to_gameplay()
             else:
                 print("Invalid choice, please try again.")
 
@@ -189,9 +235,9 @@ def display_options_menu():
     print("")
     print("Options:")
     print("")
-    global autosave
+    global autosave_enabled
 
-    if autosave:
+    if autosave_enabled:
         print("Autosave is on")
         print("\tA) Disable autosave")
     else:
@@ -206,7 +252,7 @@ def display_options_menu():
 # hanle options menu selection
 def do_options_menu():
     invalid_counter = 0
-    global autosave
+    global autosave_enabled
 
     while True:
         display_options_menu()
@@ -214,9 +260,9 @@ def do_options_menu():
 
         if user_choice.lower() == "a":
             invalid_counter = 0
-            autosave = (not autosave)
+            autosave_enabled = (not autosave_enabled)
 
-            if (autosave):
+            if (autosave_enabled):
                 print("")
                 print("Autosave enabled")
 
@@ -284,20 +330,13 @@ def do_initial_gameplay_description():
     print("In shock, you try to understand what's happening, but you only take in one detail:")
     print("the only door to this room has no doorknob - You are trapped.")
     print("")
-#   Keep this part?
-#    input("Press Any Key...")
-#    print("")
-#    print("You look down to find yourself wearing an orange jump suit.")
-#    print("As you struggle to recall why you are in this situation, you realize that the last thing")
-#    print("you remember is going to a friend's party.")
-#    print("")
-    input("Press Any Key...")
+    input("Press Enter...")
     print("")
-    print("A voice thunders through the speakers, \"All personnel evacuate immediately. Reactor leak! 45 minutes to lethal dose!\"")
+    print("A voice thunders through the speakers, \"All personnel evacuate immediately. Reactor leak! 45 minutes to lethal radiation dose!\"")
     print("The voice repeats itself unendingly, and you realize it is a recorded message.")
     print("You bring your arm up to look at a watch you don't recognize and mark how much time you have to escape....")
     print("")
-    input("Press Any Key To Begin...")
+    input("Press Enter To Begin...")
     print("")
     print("")
 
@@ -305,7 +344,7 @@ def do_initial_gameplay_description():
 class interactive_object:
     def __init__(self):
         # tracker "flags", iow what has happened to this object already?
-        self.name = "" # if we expand this, there needs to be a separate display name, so we can have an immutable original name.
+        self.name = "" # !! FIX ME! Second game has new name instead of old name....
         self.selector = ""
         # every level that has a reward, needs a level above it to receive the reward
         self.number_of_levels = 0
@@ -580,6 +619,8 @@ def evaluate_loss_condition():
 def manage_iteractable_use(i):
     global interactive_objects
 
+    do_autosave = False
+
     print("\n")  # need some breaking room
     if interactive_objects[i].current_level < interactive_objects[i].number_of_levels:
         # print("True 1")
@@ -604,6 +645,7 @@ def manage_iteractable_use(i):
                 # print("True 4")
                 inventory.append(
                     interactive_objects[i].rewards[interactive_objects[i].current_level])
+                do_autosave = True
             else:
                 pass
                 # print("False 4")
@@ -619,6 +661,7 @@ def manage_iteractable_use(i):
 
             # advance the player to the next level
             interactive_objects[i].current_level += 1
+            do_autosave = True
 
         else:
             # print("false 3")
@@ -639,6 +682,7 @@ def manage_iteractable_use(i):
         # print("True 7")
         interactive_objects[i].name = interactive_objects[i].changes_to
         interactive_objects[i].selector = interactive_objects[i].selector_changes_to
+        do_autosave = True
     else:
         # print("False 7")
         pass
@@ -647,9 +691,15 @@ def manage_iteractable_use(i):
     if interactive_objects[i].current_level == interactive_objects[i].number_of_levels and interactive_objects[i].self_disables:
         # print("True 8")
         interactive_objects[i].enabled = False
+        do_autosave = True
     else:
         # print("False 8")
         pass
+
+    global autosave_enabled
+
+    if do_autosave and autosave_enabled:
+        save_game(False)
 
     input("\nPress Enter to Continue... \n")
 
@@ -767,7 +817,7 @@ def do_rejection_loop():
         elif(choice2.lower() == "n"):
             return False
         
-    print("\nYou're winner!")
+    print("\nYou're winner!") # !! write the end game messages!!
     input("\n...")
     return True
         
@@ -862,7 +912,6 @@ def mini_game_state_machine():
             break
 
         last_game_state = next_game_state
-
 
 # run the game
 mini_game_state_machine()
