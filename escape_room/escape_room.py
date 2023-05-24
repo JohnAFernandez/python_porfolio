@@ -10,7 +10,7 @@ game_data_initialized = False
 autosave = True
 
 game_time = 45
-
+loss_counter = 0
 
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
@@ -305,7 +305,7 @@ def do_initial_gameplay_description():
 class interactive_object:
     def __init__(self):
         # tracker "flags", iow what has happened to this object already?
-        self.name = ""
+        self.name = "" # if we expand this, there needs to be a separate display name, so we can have an immutable original name.
         self.selector = ""
         # every level that has a reward, needs a level above it to receive the reward
         self.number_of_levels = 0
@@ -552,9 +552,11 @@ def reset_game():
 def evaluate_victory_condition():
     global interactive_objects
     global end_game_object
+    global loss_counter
 
     for thing in interactive_objects:
         if end_game_object == thing.name and thing.current_level == thing.number_of_levels:
+            loss_count += 1
             return True
 
     return False
@@ -562,8 +564,10 @@ def evaluate_victory_condition():
 
 def evaluate_loss_condition():
     global game_time
+    global loss_counter
 
     if game_time <= 0:
+        loss_counter += 1
         return True
     else:
         return False
@@ -667,12 +671,32 @@ def select_the_object(string):
 
     return -1
 
+def get_interactive_object(name):
+    global interactive_objects
+    for x in range(0, len(interactive_objects), 1):
+        if name == interactive_objects[x].name:
+            return x
+    
+    return -1
 
 def list_interactible_objects():
+    global interactive_objects
     print("You see the following things to examine:\n")
     for thing in interactive_objects:
         if thing.enabled == True:
             print("\t" + thing.selector + ") " + thing.name)
+
+def list_alternate_choice():
+    global interactive_objects
+    drawer = get_interactive_object("Drawer 1")
+
+    if drawer < 0 or drawer > len(interactive_objects):
+        print("WOKKA! MISSING Object.  If you're the player, you're screwed!")
+        return
+    
+    # has the journal been fully explored?
+    if interactive_objects[drawer].level == interactive_objects[drawer].number_of_levels:
+        print("J) Consider the journal")
 
 
 def list_inventory_objects():
@@ -696,7 +720,7 @@ def list_inventory_objects():
         print(result)
 
 
-def win_game_messages():
+def escape_game_messages():
     print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
     print("\nSuddenly, you black out.")
     input("\nPress enter ...")
@@ -706,6 +730,42 @@ def lose_game_messages():
     print("Your time is up. You experienec a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
     input("\nPress enter ...")
 
+
+def do_rejection_loop():
+    global game_time 
+
+    print("You sit and think about your situation.  You still have no memory of how you got here. You can remember your name, personal details and relationships...")
+    print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
+    input("Press enter...")
+    print("\nThe entries in the journal were hastily written, as if the writer knew they had almost no time. But if all this is real, then you need to get out of here as soon as possible.")
+    print("\nIn a rush you decide to...")
+    while True:
+        choice = input("\n\tA) Continue your attempts to get through the door.\n\tB) Yell at the ceiling that you aren't going to play this game anymore!")
+
+        if choice.lower() == "a":
+            return False
+        else: 
+            break
+
+    print("You sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
+    print("You say this with a steady voice and no trace of fear marks your features.\n")
+    print("Nothing happens.")
+
+    total_wait_time = 1
+
+    while total_wait_time < 10 and game_time > 5:
+        choice2 = input("\nKeep waiting? (Y/N)")
+
+        if (choice2.lower() == "y"):
+            game_time -= 1
+            total_wait_time += 10
+            print(f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose")
+        elif(choice2.lower() == "n"):
+            return False
+        
+    print("You're winner!")
+    return True
+        
 
 def do_gameplay(new_game):
     global inventory
@@ -721,7 +781,7 @@ def do_gameplay(new_game):
         game_time -= 1
 
         if evaluate_victory_condition():
-            win_game_messages()
+            escape_game_messages()
             go_to_main_menu()
             break
 
@@ -729,6 +789,7 @@ def do_gameplay(new_game):
             lose_game_messages()
             go_to_main_menu()
             break
+
 
         while True:
             list_interactible_objects()
@@ -741,6 +802,11 @@ def do_gameplay(new_game):
                 game_time += 1  # slight hack to enable us to exit to the in-game menu
                 exit_state = True
                 break
+            elif gameplay_choice.lower() == "j":
+                if do_rejection_loop():
+                    go_to_main_menu()
+                    exit_state = True
+                    break
             else:
                 i = select_the_object(gameplay_choice)
 
