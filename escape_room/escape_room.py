@@ -2,6 +2,7 @@
 # All rights reserved.
 
 import os
+import interactibles
 
 inventory = []
 end_game_object = "Door"
@@ -10,7 +11,8 @@ game_data_initialized = False
 
 autosave_enabled = True
 
-game_time = 45
+STARTING_GAME_TIME = 30
+game_time = STARTING_GAME_TIME
 loss_counter = 0
 
 # Game State Management Variables
@@ -22,12 +24,24 @@ GAMEPLAY_STATE = 2
 GAME_MENU_STATE = 3
 EXIT_GAME_STATE = 4
 
-SAVE_GAME_VERSION = 1
+# Save game constants
+SAVE_GAME_VERSION = "v1"
 SAVE_GAME_VALIDATION_STRING = "JFERSG"
+SAVE_GAME_VALIDATION_LENGTH = len(
+    SAVE_GAME_VALIDATION_STRING) + len(SAVE_GAME_VERSION)
 SAVE_GAME_EXTENSION = ".ersg"
+DEFAULT_GAME_NAME = "ESCAPE ROOM CLASSIC"
+
 
 valid_game_states = ("GAME_START_STATE", "IN_GAME",
                      "IN_MAIN_MENU", "IN_GAME_MENU", "EXIT")
+
+
+class save_state:
+    def __init__(self):
+        self.game_time = 0
+        self.interactibles = {}
+        self.inventory = []
 
 
 def exit_game():
@@ -55,7 +69,6 @@ def go_to_in_game_menu():
     next_game_state = GAME_MENU_STATE
 
 
-# written not tested
 # display the in-game menu text
 def display_in_game_menu():
     print("")
@@ -96,7 +109,7 @@ def save_game(manual_save):
 
     f = open(filename, "w")
     f.write(
-        f"{SAVE_GAME_VALIDATION_STRING}v{str(SAVE_GAME_VERSION)}\n{str(game_time)}\n")
+        f"{SAVE_GAME_VALIDATION_STRING}{SAVE_GAME_VERSION}\n{str(game_time)}\n")
     f.write(str(len(interactive_objects)))
     f.write("\n")
     for thing in interactive_objects:
@@ -108,40 +121,309 @@ def save_game(manual_save):
             f.write(",0")
         f.write("\n")
 
-    f.write(str(len(inventory)))
+    f.write(str(len(inventory))+"\n")
     for thing in inventory:
         f.write(thing)
-        f.write("\n\n")
+        f.write("\n")
+    f.write("\n\n")
     f.close()
 
     return True
+
+# Enumerate the save game modes
+PARSE_SAVE_GAME_TIME = 0
+PARSE_SAVE_GAME_INTERACTIBLES = 1
+PARSE_SAVE_GAME_INVENTORY = 2
+END_PARSE = 3
+
+
+def validate_game_time(time):
+    if type(time) == int and time < STARTING_GAME_TIME:
+        return True
+    else:
+        return False
+    
+
+def validate_interactibles(interactibles):
+    if len(interactibles) != len(interactive_objects):
+        print(f"Number of interactive objects is mismatched in game data and save file. {len(interactive_objects)} vs {len(interactibles)}")
+        return False
+
+    if type(interactibles) == dict:
+        for thing in interactibles:
+            found = False
+            for thing2 in interactive_objects:
+                if thing == thing2.name or thing == thing2.changes_to:
+                    found = True
+                    if thing2.number_of_levels < interactibles[thing][0]:
+                        print(f"Bad current level for {thing}.")
+                        return False
+                    
+            if found == False:
+                print(f"Could not find {thing} in game data")
+                return False      
+
+    else:
+        return False
+    
+    return True
+
+def validate_inventory(inventory):
+    if type(inventory) == list:
+        found = False
+
+        for thing in inventory:
+            for interactible in interactive_objects:
+                if thing in interactible.rewards:
+                    found = True
+                    break
+            
+            if found == False:
+                return False
+
+    else:
+        return False
+    
+    return True
+
+
+def apply_parsed_game(saved_game):
+    game_time = saved_game.game_time
+
+    for thing in saved_game.interactibles:
+        for thing2 in interactive_objects:
+            if thing == thing2.name or thing == thing2.changes_to:
+                thing2.enabled = thing[1] == 1
+                thing2.current_level = thing[0]
+
+    inventory = saved_game.inventory
+
+
+def parse_and_restore_save_file(saved_string):
+    position = saved_string.find("\n") + 1
+    parsed_game = save_state()
+    parse_mode = PARSE_SAVE_GAME_TIME
+    total_from_file = 0
+    section_count = 0
+
+    while position < len(saved_string):
+        if position < 0 or position >= len(saved_string):
+            print("Save File could not be parsed.")
+            print(parsed_game.game_time)
+            print(parsed_game.interactibles)
+            print(parsed_game.inventory)
+            return False
+
+        next_position = saved_string[position:].find("\n") + position
+
+        # if this is negative, it does not necessarily mean that the file is corrupt.
+        # this could be the last iteration of the loop.
+        if next_position < 0:
+            next_position = len(saved_string)
+
+        working_string = saved_string[position: next_position]
+
+        if parse_mode == PARSE_SAVE_GAME_TIME:
+            if not working_string.isnumeric():
+                print("Save file has an invalid game time, cannot parse, aborting.")
+                return False
+
+            parsed_game.game_time = int(working_string)
+            parse_mode += 1
+            position = next_position + 1
+            continue
+
+        elif parse_mode == PARSE_SAVE_GAME_INTERACTIBLES:
+            # at this point, we would just be picking up the size of the next section
+            if total_from_file == 0:
+                if not working_string.isnumeric():
+                    print(
+                        "Save file has an invalid interactible objects count, cannot parse, aborting.")
+                    return False
+
+                total_from_file = int(working_string)
+
+                # if this is empty then the section is empty and we move on to the next one
+                if total_from_file == 0:
+                    parse_mode += 1
+
+                position = next_position + 1
+                print("Successfully extraction of total ")
+                continue
+            else:
+                comma_position = working_string.find(",")
+
+                if (comma_position < 0):
+                    print(
+                        "Save game is missing commas in interactible objects lists. Aborting load.")
+                    print(working_string)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                interactible_name = working_string[0:comma_position]
+
+                last_comma_position = comma_position
+                comma_position = working_string.find(
+                    ",", last_comma_position + 1)
+
+                if (comma_position < 0):
+                    print(
+                        "Save game is missing commas in interactible objects lists. Aborting load.")
+                    print(working_string)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                last_comma_position += 1
+                if comma_position == last_comma_position:
+                    print(
+                        "Save game is missing a interatible object level, aborting load.")
+                    print(working_string)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                if not working_string[last_comma_position: comma_position].isnumeric():
+                    print(
+                        "Save game file has a non-numeric level for an interactible object, aborting load")
+                    print(working_string)
+                    print(working_string[last_comma_position: comma_position])
+                    print(last_comma_position)
+                    print(comma_position)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                level = int(working_string[last_comma_position:comma_position])
+
+                if not working_string[comma_position + 1:].isnumeric():
+                    print(
+                        "Save game file has a non-numeric for the enabled flag, aborting load")
+                    print(working_string)
+                    print(parsed_game)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                enabled = True if working_string[comma_position +
+                                                 1:] == "1" else False
+
+                parsed_game.interactibles[interactible_name] = (level, enabled)
+        elif parse_mode == PARSE_SAVE_GAME_INVENTORY:
+            if total_from_file == 0:
+                if not working_string.isnumeric():
+                    print(
+                        "Save file has an invalid inventory objects count, cannot parse, aborting.")
+                    print(working_string)
+                    print(parsed_game.game_time)
+                    print(parsed_game.interactibles)
+                    print(parsed_game.inventory)
+                    return False
+
+                total_from_file = int(working_string)
+
+                if total_from_file == 0:
+                    break
+            else:
+                parsed_game.inventory.append(working_string)
+        else:
+            print("WOKKA!  You've hit a bug!  FERNANDEZ messed up.")
+            print(working_string)
+            print(parsed_game.game_time)
+            print(parsed_game.interactibles)
+            print(parsed_game.inventory)
+            return False
+
+        section_count += 1
+        print(
+            f"Section count {section_count}, total_from_file: {total_from_file}")
+        if section_count >= total_from_file:
+            print("Should be going to next section")
+            total_from_file = 0
+            section_count = 0 
+            parse_mode += 1
+            if parse_mode >= END_PARSE:
+                print("Should be breaking")
+                break
+
+        position = next_position + 1
+
+    print(parsed_game.game_time)
+    print(parsed_game.interactibles)
+    print(parsed_game.inventory)
+
+    if not validate_game_time(parsed_game.game_time):
+        print("Parsed game time is invalid, aborting load.") 
+        return False
+    if not validate_interactibles(parsed_game.interactibles): 
+        print("Parsed interactible objects are invalid, aborting load.")
+        return False
+    if not validate_inventory(parsed_game.inventory): 
+        print("Parsed inventory is invalid, aborting load.")
+        return False
+
+    return apply_parsed_game(parsed_game)
 
 
 def load_game():
     the_list = os.listdir()
 
+    incorrect_version_files = 0
+
     # yeah, I know that looks scary.  Reverse iterate to not invalidate the index x
-    for x in range(len(the_list), 0, -1):
+    for x in range(len(the_list) - 1, -1, -1):
         # make sure we have enough digits to check the extension, then get a slice of the last portion
-        if not (len(the_list[x]) > 5 and the_list[x][-5:-1:-1] == SAVE_GAME_EXTENSION):
+        if not ((len(the_list[x]) > 5 and the_list[x][-5:] == SAVE_GAME_EXTENSION)):
             the_list.pop(x)
+            continue
+
+        test = open(the_list[x], "r").read()
+
+        if len(test) < SAVE_GAME_VALIDATION_LENGTH:
+            the_list.pop(x)
+            continue
+
+        # !! If the save game version is ever bumped, this logic will have to be changed
+        if test[0:8] != SAVE_GAME_VALIDATION_STRING + SAVE_GAME_VERSION:
+            the_list.pop(x)
+            incorrect_version_files += 1
+            continue
 
     if len(the_list) < 1:
-        print("No files to load.")
+        if (incorrect_version_files > 0):
+            print("No files to load, but some files from a different save version have been found.  Perhaps you need to use a different version of escape room.")
+        else:
+            print("No files to load.")
+
         return False
 
     print("Files to choose from:\n")
+
     x = 0
+
     for item in the_list:
-        print(f"{x}) {item[0:len(item)-5]}")
+        print(f"{x + 1}) {item[0:len(item)-5]}")
+        x += 1
+
+    if incorrect_version_files > 0:
+        print(
+            f"\nPlease note that {incorrect_version_files} files were found that could not be opened.")
 
     fail_count = 0
+
     while True:
         choice = input("\n")
         if choice.isnumeric():
-            file_index = int(choice)
+            # user's choice is 1 indexed
+            file_index = int(choice) - 1
 
-            if choice > -1 and choice < len(the_list):
+            if file_index > -1 and file_index < len(the_list):
                 break
 
         fail_count += 1
@@ -150,7 +432,12 @@ def load_game():
             print("User did not choose a valid file, aborting load.")
             return False
 
-    return True
+    filename = the_list[file_index]
+    f = open(filename, "r")
+    saved_string = f.read()
+
+    return parse_and_restore_save_file(saved_string)
+
 
 # written, not tested
 # handle the in game menu
@@ -188,20 +475,16 @@ def do_in_game_menu():
                         # save function will have its own warning message.
                         continue
 
-            # !! success = load_game()
+            success = load_game()
 
-            # !! if success
-                # !! go_to_gameplay()
-
-            print("LOAD NOT SUPPORTED YET")
-            break  # !! please indent when load is implemented
-
-            # !! else
-
-            # !!while True
-            # !! retry_try = Input("Try another file? (Y if yes)")
-            # if not retry_try.lower() == y
-            # break
+            if success:
+                go_to_gameplay()
+                break
+            else:
+                while True:
+                    retry_try = input("Try another file? (Y if yes)")
+                    if not retry_try.lower() == "y":
+                        break
 
         # options screen -- lol, What options???
         elif user_choice.lower() == "c":
@@ -270,7 +553,6 @@ def do_in_game_menu():
                 print("Invalid choice, please try again.")
 
 
-# written, not tested
 # display the options menu options.  Because of enable/disable, each option will need logic attached
 def display_options_menu():
     print("")
@@ -289,7 +571,6 @@ def display_options_menu():
     print("")
 
 
-# written, not tested
 # hanle options menu selection
 def do_options_menu():
     invalid_counter = 0
@@ -344,10 +625,9 @@ def do_main_menu():
         elif user_choice.lower() == "b":
             success = load_game()
 
-            # !! if success
-            # !! go_to_gameplay()
-
-            print("LOAD NOT SUPPORTED YET")
+            if success:
+                go_to_gameplay()
+                break
 
         elif user_choice.lower() == "c":
             do_options_menu()
@@ -382,30 +662,6 @@ def do_initial_gameplay_description():
     print("")
 
 
-class interactive_object:
-    def __init__(self):
-        # tracker "flags", iow what has happened to this object already?
-        # !! FIX ME! Second game has new name instead of old name....
-        self.name = ""
-        self.selector = ""
-        # every level that has a reward, needs a level above it to receive the reward
-        self.number_of_levels = 0
-        self.current_level = 0  # do not manually assign
-
-        self.keys = []  # object or objects required to open
-        self.messages = []  # unopened, success,
-        self.rewards = []  # what it gives when opened
-        self.enables = []
-        self.enabled = True
-        self.self_disables = False
-        # maybe this section would be better if we just replaced with another Interactible object
-        self.changes_to = ""
-        # but if I upgrade to using graphics, then I can use the same coordinates.
-        self.selector_changes_to = ""
-        # Also, this may end up introducing fewer bugs overall, since I don't have to make sure another object works.
-        self.change_level = -1
-
-
 global interactive_objects
 interactive_objects = []
 
@@ -414,10 +670,13 @@ def init():
     global game_data_initialized
     game_data_initialized = False
 
+    reset_game()
+
 
 # reset and reinitialize the game state
 def reset_game():
     global game_data_initialized
+    global game_time
 
     if game_data_initialized:
         for thing in interactive_objects:
@@ -426,8 +685,9 @@ def reset_game():
     else:
         game_data_initialized = True
 
+        game_time = STARTING_GAME_TIME
         # set up the broken doonknob
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Broken Door"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "B"
@@ -448,7 +708,7 @@ def reset_game():
         interactive_objects[-1].change_level = 1
 
         # set up the chest
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Chest"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "C"
@@ -468,7 +728,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the dresser parent object
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Dresser"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "D"
@@ -486,7 +746,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up drawer 1
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Drawer 1"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "1"
@@ -505,7 +765,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up drawer 2
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Drawer 2"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "2"
@@ -521,7 +781,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up drawer 3
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Drawer 3"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "3"
@@ -537,7 +797,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up the ceiling fan
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Fan"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "F"
@@ -558,7 +818,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the hole in
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Hole in the Wall"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "H"
@@ -584,7 +844,7 @@ def reset_game():
         interactive_objects[-1].change_level = 1
 
         # set up the lamp
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Lamp"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "L"
@@ -604,7 +864,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the step ladder
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "Step Ladder"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "S"
@@ -619,7 +879,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the tv
-        interactive_objects.append(interactive_object())
+        interactive_objects.append(interactibles.interactive_object())
         interactive_objects[-1].name = "TV"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "T"
