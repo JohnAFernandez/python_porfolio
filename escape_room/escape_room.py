@@ -189,17 +189,17 @@ def validate_inventory(inventory):
 
 def apply_parsed_game(saved_game):
     global game_time
+    global inventory
     game_time = saved_game.game_time
 
     for thing in saved_game.interactibles:
         for thing2 in interactive_objects:
             if thing == thing2.name or thing == thing2.changes_to:
-                thing2.enabled = thing[1] == 1
-                thing2.current_level = thing[0]
+                thing2.enabled = saved_game.interactibles[thing][1] == 1
+                thing2.current_level = saved_game.interactibles[thing][0]
+                break
 
     inventory = saved_game.inventory
-
-    return True
 
 
 def parse_and_restore_save_file(saved_string):
@@ -327,7 +327,9 @@ def parse_and_restore_save_file(saved_string):
         print("Parsed inventory is invalid, aborting load.")
         return False
 
-    return apply_parsed_game(parsed_game)
+    # Success is guaranteed at this point!
+    apply_parsed_game(parsed_game)
+    return True
 
 
 def load_game():
@@ -1051,7 +1053,7 @@ def lose_game_messages():
 def do_rejection_loop():
     global game_time
 
-    print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, personal details and relationships...")
+    print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, past and relationships until the last time you fell asleep...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
     input("\nPress enter...")
     print("\nThe entries in the journal were hastily written, as if the writer knew they had almost no time. But if all this is real, then you need to get out of here as soon as possible.")
@@ -1066,24 +1068,29 @@ def do_rejection_loop():
             break
 
     print("\nYou sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
-    print("You say this with a steady voice, and no trace of fear marks your features.\n")
+    print("You say this with a steady voice, and you fight hard to keep fear from marking your features.\n")
     print("Nothing happens.")
 
     total_wait_time = 1
 
-    while total_wait_time < 9 and game_time > 5:
+    while total_wait_time < 7 and game_time > 5:
         choice2 = input("\nKeep waiting? (Y/N)")
 
         if (choice2.lower() == "y"):
             game_time -= 1
             total_wait_time += 1
             print(
-                f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose")
+                f"\nYou wait for 1 more minute... {game_time} minutes until lethal dose.")
         elif (choice2.lower() == "n"):
             return False
+        else:
+            print(f"In your indecisiveness, another minute passes. {game_time} minutes until lethal dose")
 
-    print("\nYou're winner!")  # !! write the end game messages!!
+    print(f"\n\nThe klaxon and recorded voice stop playing.  A new voice speaks.\n\n\"Well, it looks like you figured it out. Now we can finally end this experiment.  It took you {loss_counter + 1} tries to figure it out. But you're free to go.\"")
+    print("\nThe room is flooded with sunlight as one of the walls retracts into the ground. And a car - your car is waiting with its door open, your phone ready to used in its holder.\n\n\tThis time, you are truly free...")
     input("\n...")
+
+    reset_game()
     return True
 
 
