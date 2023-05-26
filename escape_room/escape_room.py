@@ -2,7 +2,7 @@
 # All rights reserved.
 
 import os
-import interactibles
+from interactibles import interactive_object
 
 inventory = []
 end_game_object = "Door"
@@ -395,6 +395,8 @@ def load_game():
     f = open(filename, "r")
     saved_string = f.read()
 
+    print("\n\n") # the game is getting loaded, so we need some space to distance ourselves from the menu
+
     return parse_and_restore_save_file(saved_string)
 
 
@@ -643,7 +645,7 @@ def reset_game():
 
         game_time = STARTING_GAME_TIME
         # set up the broken doonknob
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Broken Door"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "B"
@@ -664,7 +666,7 @@ def reset_game():
         interactive_objects[-1].change_level = 1
 
         # set up the chest
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Chest"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "C"
@@ -684,7 +686,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the dresser parent object
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Dresser"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "D"
@@ -702,7 +704,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up drawer 1
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Drawer 1"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "1"
@@ -721,7 +723,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up drawer 2
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Drawer 2"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "2"
@@ -737,7 +739,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up drawer 3
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Drawer 3"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "3"
@@ -753,7 +755,7 @@ def reset_game():
         interactive_objects[-1].enabled = False
 
         # set up the ceiling fan
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Fan"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "F"
@@ -774,7 +776,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the hole in
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Hole in the Wall"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "H"
@@ -800,7 +802,7 @@ def reset_game():
         interactive_objects[-1].change_level = 1
 
         # set up the lamp
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Lamp"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "L"
@@ -820,7 +822,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the step ladder
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "Step Ladder"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "S"
@@ -835,7 +837,7 @@ def reset_game():
         interactive_objects[-1].self_disables = True
 
         # set up the tv
-        interactive_objects.append(interactibles.interactive_object())
+        interactive_objects.append(interactive_object())
         interactive_objects[-1].name = "TV"
         # print("Doing " + interactive_objects[-1].name)
         interactive_objects[-1].selector = "T"
