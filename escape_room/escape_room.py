@@ -568,8 +568,17 @@ def do_options_menu():
 def display_main_menu():
     print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
-    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Quit\n\n\nVersion 0.1.0\n")
+    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Credits and Tip Jar\n\tE) Quit\n\n\nBeta Version 0.2.0\n")
 
+
+def display_credits():
+    print("\n\n")
+    print("\t\t///ESCAPE ROOM\\\\\\")
+    print("")
+    print("\n\n\tConcept, Programming, and Writing by John A Fernandez, Singularitus Games")
+    print("This is a Beta release, version 0.2.0")
+    print("If you enjoyed this game and want to support the developer go to:\npaypal.me/singularitus")
+    input("\n\nPress Enter...")
 
 def do_main_menu():
     display_main_menu()
@@ -594,6 +603,9 @@ def do_main_menu():
             display_main_menu()
 
         elif user_choice.lower() == "d":
+            display_credits()
+
+        elif user_choice.lower() == "e":
             exit_game()
             break
 
@@ -1160,10 +1172,6 @@ def mini_game_state_machine():
     while True:
         AssertionError(next_game_state !=
                        GAME_START_STATE and next_game_state < 5)
-
-        # Uncomment to debug the game state.
-        # print("Exiting game state ", last_game_state)
-        # print("Entering game state ", next_game_state)
 
         if next_game_state == MAIN_MENU_STATE:
             if last_game_state == GAME_START_STATE:
