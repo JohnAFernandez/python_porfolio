@@ -188,6 +188,7 @@ def validate_inventory(inventory):
 
 
 def apply_parsed_game(saved_game):
+    global game_time
     game_time = saved_game.game_time
 
     for thing in saved_game.interactibles:
@@ -197,6 +198,8 @@ def apply_parsed_game(saved_game):
                 thing2.current_level = thing[0]
 
     inventory = saved_game.inventory
+
+    return True
 
 
 def parse_and_restore_save_file(saved_string):
@@ -209,9 +212,6 @@ def parse_and_restore_save_file(saved_string):
     while position < len(saved_string):
         if position < 0 or position >= len(saved_string):
             print("Save File could not be parsed.")
-            print(parsed_game.game_time)
-            print(parsed_game.interactibles)
-            print(parsed_game.inventory)
             return False
 
         next_position = saved_string[position:].find("\n") + position
@@ -248,7 +248,6 @@ def parse_and_restore_save_file(saved_string):
                     parse_mode += 1
 
                 position = next_position + 1
-                print("Successfully extraction of total ")
                 continue
             else:
                 comma_position = working_string.find(",")
@@ -256,10 +255,6 @@ def parse_and_restore_save_file(saved_string):
                 if (comma_position < 0):
                     print(
                         "Save game is missing commas in interactible objects lists. Aborting load.")
-                    print(working_string)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 interactible_name = working_string[0:comma_position]
@@ -271,32 +266,17 @@ def parse_and_restore_save_file(saved_string):
                 if (comma_position < 0):
                     print(
                         "Save game is missing commas in interactible objects lists. Aborting load.")
-                    print(working_string)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 last_comma_position += 1
                 if comma_position == last_comma_position:
                     print(
                         "Save game is missing a interatible object level, aborting load.")
-                    print(working_string)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 if not working_string[last_comma_position: comma_position].isnumeric():
                     print(
                         "Save game file has a non-numeric level for an interactible object, aborting load")
-                    print(working_string)
-                    print(working_string[last_comma_position: comma_position])
-                    print(last_comma_position)
-                    print(comma_position)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 level = int(working_string[last_comma_position:comma_position])
@@ -304,11 +284,6 @@ def parse_and_restore_save_file(saved_string):
                 if not working_string[comma_position + 1:].isnumeric():
                     print(
                         "Save game file has a non-numeric for the enabled flag, aborting load")
-                    print(working_string)
-                    print(parsed_game)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 enabled = True if working_string[comma_position +
@@ -320,10 +295,6 @@ def parse_and_restore_save_file(saved_string):
                 if not working_string.isnumeric():
                     print(
                         "Save file has an invalid inventory objects count, cannot parse, aborting.")
-                    print(working_string)
-                    print(parsed_game.game_time)
-                    print(parsed_game.interactibles)
-                    print(parsed_game.inventory)
                     return False
 
                 total_from_file = int(working_string)
@@ -334,29 +305,17 @@ def parse_and_restore_save_file(saved_string):
                 parsed_game.inventory.append(working_string)
         else:
             print("WOKKA!  You've hit a bug!  FERNANDEZ messed up.")
-            print(working_string)
-            print(parsed_game.game_time)
-            print(parsed_game.interactibles)
-            print(parsed_game.inventory)
             return False
 
         section_count += 1
-        print(
-            f"Section count {section_count}, total_from_file: {total_from_file}")
         if section_count >= total_from_file:
-            print("Should be going to next section")
             total_from_file = 0
             section_count = 0 
             parse_mode += 1
             if parse_mode >= END_PARSE:
-                print("Should be breaking")
                 break
 
         position = next_position + 1
-
-    print(parsed_game.game_time)
-    print(parsed_game.interactibles)
-    print(parsed_game.inventory)
 
     if not validate_game_time(parsed_game.game_time):
         print("Parsed game time is invalid, aborting load.") 
@@ -439,10 +398,7 @@ def load_game():
     return parse_and_restore_save_file(saved_string)
 
 
-# written, not tested
 # handle the in game menu
-
-
 def do_in_game_menu():
     display_in_game_menu()
 
