@@ -568,15 +568,15 @@ def do_options_menu():
 def display_main_menu():
     print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
-    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Credits and Tip Jar\n\tE) Quit\n\n\nBeta Version 0.2.0\n")
+    print("\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Credits\n\tE) Quit\n\n\nBeta Version 0.2.0\n")
 
 
 def display_credits():
     print("\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
     print("")
-    print("\n\n\tConcept, Programming, and Writing by John A Fernandez, Singularitus Games")
-    print("This is a Beta release, version 0.2.0")
+    print("\n\n\tConcept, Programming, and Writing by John A Fernandez, aka Singularitus")
+    print("\nThis is a Beta release, version 0.2.0")
     print("If you enjoyed this game and want to support the developer go to:\npaypal.me/singularitus")
     input("\n\nPress Enter...")
 
