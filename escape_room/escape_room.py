@@ -307,6 +307,9 @@ def parse_and_restore_save_file(saved_string):
 
                 if total_from_file == 0:
                     break
+
+                position = next_position + 1
+                continue
             else:
                 parsed_game.inventory.append(working_string)
         else:
@@ -1051,7 +1054,7 @@ def list_alternate_choice():
 
 def list_inventory_objects():
     if inventory.__len__() > 0:
-        print("\nYou can use the following objects:")
+        print("\nYou have found the following objects:")
         result = "\t"
 
         for thing in inventory:
