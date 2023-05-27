@@ -138,7 +138,7 @@ END_PARSE = 3
 
 
 def validate_game_time(time):
-    if type(time) == int and time < STARTING_GAME_TIME:
+    if type(time) == int and time <= STARTING_GAME_TIME:
         return True
     else:
         return False
