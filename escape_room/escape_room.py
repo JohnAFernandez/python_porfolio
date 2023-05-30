@@ -895,7 +895,7 @@ def evaluate_victory_condition():
 
     for thing in interactive_objects:
         if end_game_object == thing.name and thing.current_level == thing.number_of_levels:
-            loss_count += 1
+            loss_counter += 1
             return True
 
     return False
