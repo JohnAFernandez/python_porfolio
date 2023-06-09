@@ -30,28 +30,47 @@ class ship():
         self.cargo_current_volume = volume	# how much of the cargo volume is taken
         self.current_mass = mass		    # how much mass this ship has in total.
         self.base_mass = base_mass		    # if everything was removed, how much mass this ship should have.
-        self.frate = frate			        # dict, type key, amount number
+        self.frate = frate			        # dict, type key, amount number, frate == freight
+        
+    # crew methods
+    def has_sufficient_crew(self):
+        print("Unimplemented function run. has_sufficient_crew")
 
-    
 
+    # frate methods
     def add_frate(self, type, amount):
-        print("Unimplemented function run.")
+        print("Unimplemented function run. Add frate")
         return
 
     def get_frate_list(self):
-        print("Unimplemented function run.")
+        print("Unimplemented function run. get frate list")
         return
 
     def remove_frate(self, type_amount):
-        print("Unimplemented function run.")
+        print("Unimplemented function run. remove frate")
         return
 
+
+    # passenger methods
     def add_passengers(self, amount):
-        print("Unimplemented function run.")
+        print("Unimplemented function run. add passengers")
         return
+    
+    def remove_passengers(self, amount):
+        print("Unimplemented function run. remove_passengers")
 
+
+    # cargo volume and mass calculations
+    def recalculate_cargo_volume(self, amount):
+        print("Unimplemented function run. recalculate_cargo_volume")
+
+    def recalculate_ship_mass(self, amount):
+        print("Unimplemented function run. recaulculate_ship_mass")
+
+
+    # subsystem methods
     def damage_subsystem(self, subsystem, amount):
-        print("Unimplemented function run.")
+        print("Unimplemented function run. damage subsystem")
         return
 
     def repair_subsystem(self, subsystem, amount):
@@ -63,11 +82,13 @@ Ship_Classes = {"taco example" : ship("taco example", 5, 0, {SUBSYSTEM_TYPES[0]:
 
 
 class fleet():
-    def __init__(self, owner, current_des, flight_plan, ships):
+    def __init__(self, owner, current_des, flight_plan, ships, docked, dry_docked):
         self.owner = owner                      # which guild owns this fleet
         self.current_destination = current_des  # where is the fleet currently heading
         self.flight_plan = flight_plan          # what is the planned out route for this fleet
         self.ships = ships                      # what ships are in this fleet
+        self.docked = docked                    # is this fleet docked?
+        self.dry_docked = dry_docked            # is this fleet dry docked?
         
 
 class module(): # a building or installtion module -- Only listing everything in an installation, or if owned by a guild on a world.
@@ -130,7 +151,7 @@ class world(inhabitable):
     
     # is the colony ready to be started?
     def is_colony_ready(self):
-        print("Unimplemented Function Run")
+        print("Unimplemented Function Run is_colony_ready")
         return False 
     
     # the planet is in its natural state
@@ -138,10 +159,21 @@ class world(inhabitable):
         return self.pop < 1 and len(self.modules) < 1 and len(self.stockpiles) < 1
 
     # time to eat metal
-    def consume_raw_material(self, material, amount){
-        remaining = self.raw_materials(material)
-        return 
-    }
+    def consume_raw_material(self, material, amount):
+        remaining = self.raw_materials[material]
+
+        if amount > remaining:
+            self.raw_materials[material] = 0.0
+            return remaining
+        else: 
+            self.raw_materials[material] = remaining - amount
+            return amount
+    
+    # yeah, what am I doing here???
+    def recycle_materials(self):
+        print("Unimplemented Function Run, recycle materials.")
+        return
+    
 
 world_Types = {}
 
@@ -157,8 +189,10 @@ System_Types = {}
 Star_Types = {}
 
 class guild():
-    def __init__(self, name, routes, fleets, installations, inventory, assets, employees):
+    def __init__(self, name, reputation, eth_rep, routes, fleets, installations, inventory, assets, employees):
         self.name = name                        # name of the guild
+        self.reputation = reputation            # how well respected is this guild, whether good or ill?
+        self.ethical_reputation = eth_rep       # has this faction acted like they are an ethical faction in the past?
         self.routes = routes                    # what routes are known to this guild
         self.fleets = fleets                    # what fleets are maintained by this guild
         self.installations = installations      # the installations owned by this guild.
