@@ -63,11 +63,11 @@ Ship_Classes = {"taco example" : ship("taco example", 5, 0, {SUBSYSTEM_TYPES[0]:
 
 
 class fleet():
-    def __init__(self, owner, current_des ):
+    def __init__(self, owner, current_des, flight_plan, ships):
         self.owner = owner                      # which guild owns this fleet
         self.current_destination = current_des  # where is the fleet currently heading
-        self.flight_plan = []                   # what is the planned out route for this fleet
-        self.ships = []                         # what ships are in this fleet
+        self.flight_plan = flight_plan          # what is the planned out route for this fleet
+        self.ships = ships                      # what ships are in this fleet
         
 
 class module(): # a building or installtion module -- Only listing everything in an installation, or if owned by a guild on a world.
@@ -118,23 +118,28 @@ Installation_Types = {}
 
 
 class world(inhabitable):
-    def __init__(self, pop, producing, address, government, stockpiles, modules, raw_materials, ecology):
+    def __init__(self, pop, producing, address, government, stockpiles, modules, type, raw_materials, ecology):
         super().__init__(pop, producing, address, government, stockpiles, modules)
-        self.raw_materials = raw_materials  # what minerals is available on the world surface
+        self.type = type
+        self.raw_materials = raw_materials  # what minerals is available on the world
         self.ecology_produces = ecology     # a list of things the local ecology produces
     
+    # are there people down there?
     def is_colonized(self):
         return self.pop > 0
     
+    # is the colony ready to be started?
     def is_colony_ready(self):
         print("Unimplemented Function Run")
         return False 
     
+    # the planet is in its natural state
     def is_pristine(self):
         return self.pop < 1 and len(self.modules) < 1 and len(self.stockpiles) < 1
 
+    # time to eat metal
     def consume_raw_material(self, material, amount){
-
+        remaining = self.raw_materials(material)
         return 
     }
 
@@ -149,17 +154,17 @@ class system():
         self.fleets = fleets            # what fleets are in system?
 
 System_Types = {}
-
+Star_Types = {}
 
 class guild():
     def __init__(self, name, routes, fleets, installations, inventory, assets, employees):
-        self.name = name
-        self.routes = routes
-        self.fleets = fleets 
-        self.installations = installations
-        self.inventory = inventory
-        self.assets = assets
-        self.employees = employees
+        self.name = name                        # name of the guild
+        self.routes = routes                    # what routes are known to this guild
+        self.fleets = fleets                    # what fleets are maintained by this guild
+        self.installations = installations      # the installations owned by this guild.
+        self.inventory = inventory              # what raw materials, completed materials are used in this guild.
+        self.assets = assets                    # Currency, Inventory, Ships, etc.
+        self.employees = employees              # A list of employees.  Not sure what to do with this yet.
 
-
-Locations = []
+# I need a way to define orbits.  We're going with cicular because you know, we've been making this way too complicated
+Locations = [] # list of lists, where the index is tracked in each object, for quick access.  Then each sublist will list all objects at that location.
