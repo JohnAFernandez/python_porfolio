@@ -1,14 +1,17 @@
-import sys
-FLOAT_MAX = sys.float_info.max
-FLOAT_MIN = sys.float_info.min
-INT_MAX = 2147483647
-INT_MIN = -2147483648
-from math import pi
+from game_math import FLOAT_MAX, FLOAT_MIN, INT_MAX, INT_MIN
+
+
 
 
 # ==== universe constants ====
 CURRENCY_NAME = "Dollars" # but whut about mai credits??
 
+# ==== fleet constants ====
+IFF_FRIEND = 0
+IFF_FRIENDLY = 1
+IFF_NUTRAL = 2
+IFF_SUSPISCIOUS = 3
+IFF_ENEMY = 4
 
 
 # ==== ship constants =====
@@ -59,6 +62,11 @@ class Ship():
 
         self.max_accel = self.max_engine_force / self.current_mass
         self.max_manuverability = self.max_manuver_force / self.current_mass
+        self.in_combat = False
+
+    def find_close_fleet(self, address):
+        print("Yes, please implement find close fleet")
+        return
 
         
     # crew methods
@@ -111,25 +119,51 @@ Ship_Classes = {"taco example" : Ship("taco example", 5, 0, {SUBSYSTEM_TYPES[0]:
 
 
 class Fleet():
-    def __init__(self, owner, address, xvec, yvec, current_des, flight_plan, ships, docked, dry_docked):
+    def __init__(self, owner, address, x, y, current_des, flight_plan, ships, docked, dry_docked):
         self.owner = owner                      # which guild owns this fleet
         self.current_destination = current_des  # where is the fleet currently heading
         self.address = address
-        self.vector = [xvec, yvec]
+        self.velocity = [x, y]
         self.flight_plan = flight_plan          # what is the planned out route for this fleet
         self.ships = ships                      # what ships are in this fleet
         self.docked = docked                    # is this fleet docked?
         self.dry_docked = dry_docked            # is this fleet dry docked?
 
         # intrinsic instance variables
-        self.max_accel = 
-        self.armed_tonnage = 0
-        self.frate_tonnage
+        self.max_accel = FLOAT_MAX
+        self.max_manuverability = FLOAT_MAX
+        self.armed_mass = 0.0                   # how much of this fleet is armed
+        self.frate_mass = 0.0                # how much of this fleet is unarmed
+        self.in_cpombat = False
+
         if len(self.ships) > 0:
-            for 
+            for ship in self.ships:
+                # the fleet can only accelerate as fast as its slowest ship.
+                if ship.max_accel < self.max_accel:
+                    self.max_accel = ship.max_accel
+                if ship.max_manuverability < self.max_manuverability:
+                    self.max_manuverability = ship.max_manuverability
+                
+                if ship.armed:
+                    self.armed_mass += ship.mass
+                else:
+                    self.frate_mass += ship.mass
 
     def turn(self):
-        pass
+
+        # this will check that there are any fleets to interact with
+        close_fleets = find_close_fleets(self, self.address)
+
+        if len(close_fleets) > 0:
+            # this is going to be a function to evaluate just how much friendly and enemy presence
+            iff_pair = evaluate_iff_standing(close_fleets)  
+            
+            if iff_pair[1] > 0 and iff_pair[0] < iff_pair[1] > 
+        
+        if not self.interacting:
+            if is_on_course(self.address, self.velocity, self.current_destination):
+
+        
         
 
 class Module(): # a building or installtion module -- Only listing everything in an installation, or if owned by a guild on a world.
@@ -240,6 +274,7 @@ class Guild():
         self.inventory = inventory              # what raw materials, completed materials are used in this guild.
         self.assets = assets                    # Currency, Inventory, Ships, etc.
         self.employees = employees              # A list of employees.  Not sure what to do with this yet.
+        self.iffs = []                          # dictonary enemy as key, then
 
 class Location():
     def __init__(self, system, orbit, orbital_direction, degrees):
