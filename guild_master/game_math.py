@@ -1,3 +1,6 @@
+# Note from the programmer.  -- I ran into some limitations in Python and I'm going to switch to another language.
+
+
 import sys
 FLOAT_MAX = sys.float_info.max
 FLOAT_MIN = sys.float_info.min

@@ -1,18 +1,22 @@
-from game_math import FLOAT_MAX, FLOAT_MIN, INT_MAX, INT_MIN
+# Note from the programmer.  -- I ran into some limitations in Python and I'm going to switch to another language.
 
+
+from game_math import FLOAT_MAX, FLOAT_MIN, INT_MAX, INT_MIN
+from game_time import time_has_elapsed
 
 
 
 # ==== universe constants ====
 CURRENCY_NAME = "Dollars" # but whut about mai credits??
 
-# ==== fleet constants ====
+# ==== Guild constants ====
 IFF_FRIEND = 0
 IFF_FRIENDLY = 1
 IFF_NUTRAL = 2
 IFF_SUSPISCIOUS = 3
 IFF_ENEMY = 4
 
+# ==== fleet constants ====
 FLEET_STATE_UNSET = 0
 FLEET_STATE_DOCKED = 1
 FLEET_STATE_DEPARTING_STATION = 2
@@ -137,7 +141,7 @@ Ship_Classes = {"taco example" : Ship("taco example", 5, 0, {SUBSYSTEM_TYPES[0]:
 class Fleet():
     def __init__(self, owner, address, x, y, current_des, flight_plan, ships, docked, dry_docked):
         self.state = FLEET_STATE_UNSET
-        self.time_in_state = 0
+        self.state_time_target = 0
         self.owner = owner                      # which guild owns this fleet
         self.current_destination = current_des  # where is the fleet currently heading
         self.address = address
@@ -167,14 +171,57 @@ class Fleet():
                 else:
                     self.frate_mass += ship.mass
 
+    def task_is_complete(self, state):
+        if self.state == FLEET_STATE_UNSET:
+            self.what_am_i_doing()
+            return True
+        
+        elif self.state == FLEET_STATE_DOCKED:
+            if len(self.flight_plan) < 1:
+                return False
+            else:
+                self.what_am_i_doing()
+
+        elif self.state == FLEET_STATE_DEPARTING_STATION:
+            if time_has_elapsed(self.state_time_target)
+
+
+        elif self.state == FLEET_STATE_DEPARTING_PLANET:
+
+        elif self.state == FLEET_STATE_SYSTEM_TRANSIT:
+
+        elif self.state == FLEET_STATE_INTERSYSTEM_TRANSIT:
+
+        elif self.state == FLEET_STATE_SYSTEM_PATROL:
+
+        elif self.state == FLEET_STATE_PLANET_PATROL:
+
+        elif self.state == FLEET_STATE_STATION_PATROL:
+
+        elif self.state == FLEET_STATE_COMBAT:
+
+        elif self.state == FLEET_STATE_CAPTURING:
+
+        elif self.state == FLEET_STATE_RETREAT:
+
+        elif self.state == FLEET_STATE_DISABLED:
+
+        elif self.state == FLEET_STATE_SURRENDERED:
+
+        elif self.state == FLEET_STATE_DESTROYED:
+
+        elif self.state == FLEET_STATE_PLANETARY_ORBIT:
+
+        else:
+            print("task_is_complete has a bad state.")
+            self.what_am_i_doing()
+            return True
+
     def turn(self):
 
-        # ok, let's plan this out.  A fleet needs to figure out where it's going, make sure it's on the right track, fight, dock
-        if self.state == FLEET_STATE_UNSET:
-            print("WOKKA, set the fleet state already!")
-
-        if is_on_course(self.address, self.velocity, self.current_destination):
             
+        if is_on_course(self.address, self.velocity, self.current_destination):
+        
         else:
             calculate_orbital_math
 
@@ -184,7 +231,7 @@ class Fleet():
         if len(close_fleets) > 0:
             # this is going to be a function to evaluate just how much friendly and enemy presence
             iff_pair = evaluate_iff_standing(close_fleets)  
-            
+        
             if iff_pair[1] > 0 and iff_pair[0] < iff_pair[1] > 
         
 
