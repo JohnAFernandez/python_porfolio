@@ -13,6 +13,22 @@ IFF_NUTRAL = 2
 IFF_SUSPISCIOUS = 3
 IFF_ENEMY = 4
 
+FLEET_STATE_UNSET = 0
+FLEET_STATE_DOCKED = 1
+FLEET_STATE_DEPARTING_STATION = 2
+FLEET_STATE_DEPARTING_PLANET = 3
+FLEET_STATE_SYSTEM_TRANSIT = 4
+FLEET_STATE_INTERSYSTEM_TRANSIT = 5
+FLEET_STATE_SYSTEM_PATROL = 6
+FLEET_STATE_PLANET_PATROL = 7
+FLEET_STATE_STATION_PATROL = 8
+FLEET_STATE_COMBAT = 9
+FLEET_STATE_CAPTURING = 10
+FLEET_STATE_RETREAT = 11
+FLEET_STATE_DISABLED = 12
+FLEET_STATE_SURRENDERED = 13
+FLEET_STATE_DESTROYED = 14
+FLEET_STATE_PLANETARY_ORBIT = 15
 
 # ==== ship constants =====
 SUBSYSTEM_TYPES = ("Engine", "Subspace Drive", 
@@ -120,6 +136,8 @@ Ship_Classes = {"taco example" : Ship("taco example", 5, 0, {SUBSYSTEM_TYPES[0]:
 
 class Fleet():
     def __init__(self, owner, address, x, y, current_des, flight_plan, ships, docked, dry_docked):
+        self.state = FLEET_STATE_UNSET
+        self.time_in_state = 0
         self.owner = owner                      # which guild owns this fleet
         self.current_destination = current_des  # where is the fleet currently heading
         self.address = address
@@ -151,6 +169,15 @@ class Fleet():
 
     def turn(self):
 
+        # ok, let's plan this out.  A fleet needs to figure out where it's going, make sure it's on the right track, fight, dock
+        if self.state == FLEET_STATE_UNSET:
+            print("WOKKA, set the fleet state already!")
+
+        if is_on_course(self.address, self.velocity, self.current_destination):
+            
+        else:
+            calculate_orbital_math
+
         # this will check that there are any fleets to interact with
         close_fleets = find_close_fleets(self, self.address)
 
@@ -160,8 +187,6 @@ class Fleet():
             
             if iff_pair[1] > 0 and iff_pair[0] < iff_pair[1] > 
         
-        if not self.interacting:
-            if is_on_course(self.address, self.velocity, self.current_destination):
 
         
         
