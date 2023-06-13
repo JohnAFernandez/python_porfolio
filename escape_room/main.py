@@ -696,7 +696,7 @@ def do_main_menu():
 def do_initial_gameplay_description():
     print("")
     print("")
-    print("A cacophonos klaxon awakens you!")
+    print("A cacophonous klaxon awakens you!")
     print("")
     print("Disoriented, you are greeted by unfamiliar surroundings.")
     print("As far as you can tell, you have never been in this room before.")
@@ -1145,7 +1145,7 @@ def escape_game_messages():
 
 
 def lose_game_messages():
-    print("Your time is up. You experienec a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
+    print("Your time is up. You experience a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
     input("\nPress enter ...")
 
 
