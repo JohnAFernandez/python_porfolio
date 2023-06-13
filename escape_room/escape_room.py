@@ -134,6 +134,10 @@ def save_game(manual_save):
     for thing in inventory:
         f.write(thing)
         f.write("\n")
+    
+    global loss_counter
+
+    f.write(str(loss_counter) + "\n")
     f.write("\n\n")
     f.close()
 
@@ -338,7 +342,7 @@ def parse_and_restore_save_file(saved_string):
             continue
 
         else:
-            print("WOKKA!  You've hit a bug!  Please report at https://github.com/JohnAFernandez/python_porfolio/issues")
+            print("WOKKA!  You've hit a bug in the load game code!  Please report at https://github.com/JohnAFernandez/python_porfolio/issues")
             return False
 
         section_count += 1
@@ -992,7 +996,7 @@ def manage_iteractable_use(i):
                 # print("False 3")
 
                 print("WOKKA! Missing success message. Current level is " +
-                      str(interactive_objects[i].current_level))
+                      str(interactive_objects[i].current_level) + ". Please report to https://github.com/JohnAFernandez/python_porfolio/issues")
 
             # if we have a valid reward
             if interactive_objects[i].rewards.__len__() > interactive_objects[i].current_level and interactive_objects[i].rewards[interactive_objects[i].current_level] != "":
@@ -1026,7 +1030,7 @@ def manage_iteractable_use(i):
             else:
                 # print("false 6")
                 print(
-                    f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}")
+                    f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}. Please report to https://github.com/JohnAFernandez/python_porfolio/issues")
     else:
         # print("false 1")
         print(interactive_objects[i].messages[-1])
@@ -1102,7 +1106,7 @@ def list_alternate_choice():
     drawer = get_interactive_object("Drawer 1")
 
     if drawer < 0 or drawer > len(interactive_objects):
-        print("WOKKA! MISSING Object.  If you're the player, you're screwed!")
+        print("WOKKA! MISSING Object.  Please report to at https://github.com/JohnAFernandez/python_porfolio/issues")
         return
 
     # has the journal been fully explored?
