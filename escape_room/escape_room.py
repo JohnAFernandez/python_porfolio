@@ -332,14 +332,13 @@ def parse_and_restore_save_file(saved_string):
                 parsed_game.inventory.append(working_string)
         elif parse_mode == PARSE_SAVE_GAME_LOSS_COUNTER:
             if not working_string.isnumeric():
-                print("Save file has an invalid secret bit of data.  Cannot parse, aborting.")
+                print(f"Save file has an invalid secret bit of data. Cannot parse, aborting.")
                 return False
 
             global loss_counter
             loss_counter = int(working_string)
 
             position = next_position + 1
-            continue
 
         else:
             print("WOKKA!  You've hit a bug in the load game code!  Please report at https://github.com/JohnAFernandez/python_porfolio/issues")
@@ -369,6 +368,8 @@ def parse_and_restore_save_file(saved_string):
         print("Parsed inventory is invalid, aborting load.")
         return False
 
+    print("\nLoad Successful!")
+    print("\n\n")
     # Success is guaranteed at this point!
     reset_game()
     apply_parsed_game(parsed_game)
@@ -415,9 +416,11 @@ def load_game():
         print(f"{x + 1}) {item[0:len(item)-5]}")
         x += 1
 
-    if incorrect_version_files > 0:
+    if incorrect_version_files > 1:
         print(
-            f"\nPlease note that {incorrect_version_files} files were found that could not be opened.")
+            f"\nPlease note that {incorrect_version_files} files were found that could not be opened because it is either the wrong save game version, or corrupt.")
+    elif incorrect_version_files > 0:
+        print(f"Please note that {incorrect_version_files} file was found that could not be opened because it is either the wrong save game version, or corrupt..")
 
     fail_count = 0
 
@@ -440,7 +443,6 @@ def load_game():
     f = open(filename, "r")
     saved_string = f.read()
 
-    print("\nLoad Successful!")
     print("\n\n") # the game is getting loaded, so we need some space to distance ourselves from the menu
 
     return parse_and_restore_save_file(saved_string)
@@ -724,12 +726,13 @@ def init():
 # reset and reinitialize the game state
 def reset_game():
     global game_time
-
-    game_data_initialized = True
+    global interactive_objects
+    global inventory
 
     game_time = STARTING_GAME_TIME
 
     interactive_objects.clear()
+    inventory.clear()
 
     # set up the broken doonknob
     interactive_objects.append(interactive_object())
