@@ -456,17 +456,30 @@ def do_in_game_menu():
                         # save function will have its own warning message.
                         continue
 
-            success = load_game()
+            game_state_exit = False
 
-            if success:
-                go_to_gameplay()
-                break
-            else:
-                while True:
+            success = load_game()
+            fail_count = 0
+
+            while True:
+
+                if success:
+                    go_to_gameplay()
+                    game_state_exit = True
+                    break
+                else:
                     retry_try = input("Try another file? (Y if yes)")
-                    if not retry_try.lower() == "y":
+
+                    if retry_try.lower() == "y":
+                        success = load_game()
+                        game_state_exit = True
+                        break
+                    elif retry_try.lower() == "n":
                         break
                     else:
+                        fail_count += 1
+                        if fail_count > 3:
+                            break
 
 
         # options screen -- lol, What options???
