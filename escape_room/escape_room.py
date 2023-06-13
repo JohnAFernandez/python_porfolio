@@ -452,7 +452,7 @@ def do_in_game_menu():
                 if backup_save_choice.lower() == "y" or backup_save_choice.lower() == "yes":
                     saved = save_game(True)
                     if not saved:
-                        print("Aborted load due to save failure. (not supported yet)")
+                        print("Aborted load due to save failure.")
                         # save function will have its own warning message.
                         continue
 
@@ -466,6 +466,8 @@ def do_in_game_menu():
                     retry_try = input("Try another file? (Y if yes)")
                     if not retry_try.lower() == "y":
                         break
+                    else:
+
 
         # options screen -- lol, What options???
         elif user_choice.lower() == "c":
@@ -896,7 +898,7 @@ def reset_game():
     # set up the tv
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "TV"
-    interactive_objects[-1].default_name = "Step Ladder"
+    interactive_objects[-1].default_name = "TV"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "T"
     interactive_objects[-1].number_of_levels = 1
