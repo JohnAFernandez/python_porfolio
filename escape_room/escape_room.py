@@ -418,6 +418,7 @@ def load_game():
     f = open(filename, "r")
     saved_string = f.read()
 
+    print("\nLoad Successful!")
     print("\n\n") # the game is getting loaded, so we need some space to distance ourselves from the menu
 
     return parse_and_restore_save_file(saved_string)
@@ -481,6 +482,8 @@ def do_in_game_menu():
                         if fail_count > 3:
                             break
 
+            if game_state_exit:
+                break
 
         # options screen -- lol, What options???
         elif user_choice.lower() == "c":
@@ -1140,11 +1143,11 @@ def do_rejection_loop():
 
     print("\nYou sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
     print("You say this with a steady voice, and you fight hard to keep fear from marking your features.\n")
-    print("Nothing happens.")
 
     total_wait_time = 1
 
     while total_wait_time < 7 and game_time > 5:
+        print("Nothing happens.")
         choice2 = input("\nKeep waiting? (Y/N)")
 
         if (choice2.lower() == "y"):
@@ -1210,7 +1213,7 @@ def do_gameplay(new_game):
 
                 if (i < 0):
                     print(
-                        "You get confused -- The radiation must be getting to you. You resolve to be more deliberate.")
+                        "You get confused -- The radiation must be getting to you. You resolve to be more deliberate.\n")
                     continue
 
                 manage_iteractable_use(i)
