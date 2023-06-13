@@ -194,7 +194,7 @@ def apply_parsed_game(saved_game):
 
     for thing in saved_game.interactibles:
         for thing2 in interactive_objects:
-            if thing == thing2.name or thing == thing2.changes_to:
+            if thing == thing2.default_name or thing == thing2.name or thing == thing2.changes_to:
                 thing2.enabled = saved_game.interactibles[thing][1] == 1
                 thing2.current_level = saved_game.interactibles[thing][0]
                 break
@@ -204,6 +204,8 @@ def apply_parsed_game(saved_game):
         if thing.change_level > -1 and thing.current_level >= thing.change_level:
             thing.name = thing.changes_to
             thing.selector = thing.selector_changes_to
+        else:
+            thing.name = thing.default_name
 
     inventory = saved_game.inventory
 
@@ -682,6 +684,7 @@ def reset_game():
 
     # set up the broken doonknob
     interactive_objects.append(interactive_object())
+    interactive_objects[-1].default_name = "Broken Door"
     interactive_objects[-1].name = "Broken Door"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "B"
@@ -704,6 +707,7 @@ def reset_game():
     # set up the chest
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Chest"
+    interactive_objects[-1].default_name = "Chest"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "C"
     interactive_objects[-1].number_of_levels = 2
@@ -724,6 +728,7 @@ def reset_game():
     # set up the dresser parent object
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Dresser"
+    interactive_objects[-1].default_name = "Dresser"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "D"
     interactive_objects[-1].number_of_levels = 1
@@ -742,6 +747,7 @@ def reset_game():
     # set up drawer 1
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 1"
+    interactive_objects[-1].default_name = "Drawer 1"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "1"
     interactive_objects[-1].number_of_levels = 2
@@ -761,6 +767,7 @@ def reset_game():
     # set up drawer 2
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 2"
+    interactive_objects[-1].default_name = "Drawer 2"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "2"
     interactive_objects[-1].number_of_levels = 1
@@ -777,6 +784,7 @@ def reset_game():
     # set up drawer 3
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 3"
+    interactive_objects[-1].default_name = "Drawer 3"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "3"
     interactive_objects[-1].number_of_levels = 1
@@ -793,6 +801,7 @@ def reset_game():
     # set up the ceiling fan
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Fan"
+    interactive_objects[-1].default_name = "Fan"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "F"
     interactive_objects[-1].number_of_levels = 2
@@ -814,6 +823,7 @@ def reset_game():
     # set up the hole in
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Hole in the Wall"
+    interactive_objects[-1].default_name = "Hole in the Wall"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "H"
     interactive_objects[-1].number_of_levels = 2
@@ -840,6 +850,7 @@ def reset_game():
     # set up the lamp
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Lamp"
+    interactive_objects[-1].default_name = "Lamp"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "L"
     interactive_objects[-1].number_of_levels = 2
@@ -860,6 +871,7 @@ def reset_game():
     # set up the step ladder
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Step Ladder"
+    interactive_objects[-1].default_name = "Step Ladder"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "S"
     interactive_objects[-1].number_of_levels = 1
@@ -875,6 +887,7 @@ def reset_game():
     # set up the tv
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "TV"
+    interactive_objects[-1].default_name = "Step Ladder"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "T"
     interactive_objects[-1].number_of_levels = 1
