@@ -107,6 +107,15 @@ def save_game(manual_save):
 
     filename += ".ersg"
 
+    # this block should allow backups *and* keep save file corruption from happening.
+    if os.path.exists(filename):
+        backup_filename = filename + ".bakup"
+        
+        if os.path.exists(backup_filename):
+            os.remove(backup_filename)
+        
+        os.rename(filename, backup_filename)
+        
     f = open(filename, "w")
     f.write(
         f"{SAVE_GAME_VALIDATION_STRING}{SAVE_GAME_VERSION}\n{str(game_time)}\n")
