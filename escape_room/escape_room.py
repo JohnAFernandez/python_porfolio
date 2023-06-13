@@ -24,7 +24,7 @@ GAME_MENU_STATE = 3
 EXIT_GAME_STATE = 4
 
 # Save game constants
-SAVE_GAME_VERSION = "v1"
+SAVE_GAME_VERSION = "v2"
 SAVE_GAME_VALIDATION_STRING = "JFERSG"
 SAVE_GAME_VALIDATION_LENGTH = len(
     SAVE_GAME_VALIDATION_STRING) + len(SAVE_GAME_VERSION)
@@ -143,7 +143,8 @@ def save_game(manual_save):
 PARSE_SAVE_GAME_TIME = 0
 PARSE_SAVE_GAME_INTERACTIBLES = 1
 PARSE_SAVE_GAME_INVENTORY = 2
-END_PARSE = 3
+PARSE_SAVE_GAME_LOSS_COUNTER = 3
+END_PARSE = 4
 
 
 def validate_game_time(time):
@@ -164,6 +165,7 @@ def validate_interactibles(interactibles):
             for thing2 in interactive_objects:
                 if thing == thing2.name or thing == thing2.changes_to:
                     found = True
+
                     if thing2.number_of_levels < interactibles[thing][0]:
                         print(f"Bad current level for {thing}.")
                         return False
@@ -286,6 +288,7 @@ def parse_and_restore_save_file(saved_string):
                     return False
 
                 last_comma_position += 1
+
                 if comma_position == last_comma_position:
                     print(
                         "Save game is missing a interatible object level, aborting load.")
@@ -323,15 +326,28 @@ def parse_and_restore_save_file(saved_string):
                 continue
             else:
                 parsed_game.inventory.append(working_string)
+        elif parse_mode == PARSE_SAVE_GAME_LOSS_COUNTER:
+            if not working_string.isnumeric():
+                print("Save file has an invalid secret bit of data.  Cannot parse, aborting.")
+                return False
+
+            global loss_counter
+            loss_counter = int(working_string)
+
+            position = next_position + 1
+            continue
+
         else:
-            print("WOKKA!  You've hit a bug!  FERNANDEZ messed up.")
+            print("WOKKA!  You've hit a bug!  Please report at https://github.com/JohnAFernandez/python_porfolio/issues")
             return False
 
         section_count += 1
+
         if section_count >= total_from_file:
             total_from_file = 0
             section_count = 0 
             parse_mode += 1
+
             if parse_mode >= END_PARSE:
                 break
 
@@ -340,9 +356,11 @@ def parse_and_restore_save_file(saved_string):
     if not validate_game_time(parsed_game.game_time):
         print("Parsed game time is invalid, aborting load.") 
         return False
+    
     if not validate_interactibles(parsed_game.interactibles): 
         print("Parsed interactible objects are invalid, aborting load.")
         return False
+    
     if not validate_inventory(parsed_game.inventory): 
         print("Parsed inventory is invalid, aborting load.")
         return False
@@ -1126,6 +1144,7 @@ def lose_game_messages():
 
 def do_rejection_loop():
     global game_time
+    global loss_counter
 
     print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, past and relationships until the last time you fell asleep...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
@@ -1226,7 +1245,6 @@ def do_gameplay(new_game):
 
 def mini_game_state_machine():
 
-    global last_game_state
     last_game_state = GAME_START_STATE
     global next_game_state
     next_game_state = MAIN_MENU_STATE
