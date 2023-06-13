@@ -109,7 +109,7 @@ def save_game(manual_save):
 
     # this block should allow backups *and* keep save file corruption from happening.
     if os.path.exists(filename):
-        backup_filename = filename + ".bakup"
+        backup_filename = filename + ".backup"
         
         if os.path.exists(backup_filename):
             os.remove(backup_filename)
