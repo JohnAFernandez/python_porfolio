@@ -857,6 +857,33 @@ def reset_game():
     interactive_objects[-1].enabled = True
     interactive_objects[-1].self_disables = True
 
+    # set up the wardrobe, a dummy object
+    interactive_objects.append(interactive_object())
+    interactive_objects[-1].name = "Ottoman"
+    # print("Doing " + interactive_objects[-1].name)
+    interactive_objects[-1].selector = "O"
+    interactive_objects[-1].number_of_levels = 1
+    interactive_objects[-1].keys.append("Screwdriver")
+    interactive_objects[-1].messages.append(
+        "In the middle of the room is a beat up ottoman.  Nothing is on top or below. You cannot think of any other hiding place besides inside it, but you lack a tool to attempt it.")
+    interactive_objects[-1].messages.append( "In desperation, you pierce the ottoman with the screwdriver and shred through the apholstery. It contains only feathers.")
+    interactive_objects[-1].enabled = True
+    interactive_objects[-1].self_disables = True
+
+    # set up the picture frame, a dummy object
+    interactive_objects.append(interactive_object())
+    interactive_objects[-1].name = "Picture Frame"
+    # print("Doing " + interactive_objects[-1].name)
+    interactive_objects[-1].selector = "P"
+    interactive_objects[-1].number_of_levels = 2
+    interactive_objects[-1].messages.append("")
+    interactive_objects[-1].messages.append(
+        "A picture frame on the wall holds a picture of you.  How or why there is a picture of you here, you cannot understand.")
+    interactive_objects[-1].messages.append( "")
+    interactive_objects[-1].messages.append("You break the picture and find a note.\n\n\"Happy Birthday from all your friends! Have fun in the Bahamas!\"\n\nThis does not spark any forgotten memories.  You drop the useless note.")
+    interactive_objects[-1].enabled = True
+    interactive_objects[-1].self_disables = True
+
     # set up the step ladder
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Step Ladder"
@@ -886,6 +913,19 @@ def reset_game():
     interactive_objects[-1].rewards.append("")
     interactive_objects[-1].enabled = True
     interactive_objects[-1].self_disables = True
+
+    # set up the ward drobe, a dummy object
+    interactive_objects.append(interactive_object())
+    interactive_objects[-1].name = "Wardrobe"
+    # print("Doing " + interactive_objects[-1].name)
+    interactive_objects[-1].selector = "W"
+    interactive_objects[-1].number_of_levels = 1
+    interactive_objects[-1].messages.append("")
+    interactive_objects[-1].messages.append(
+        "In a corner is an old-fashioned wardrobe. You open it to search it, but it is empty.")
+    interactive_objects[-1].messages.append(  "Looking at the wardrobe again, even the surfaces of it are completely smooth. There is also nothing below or behind it.")
+    interactive_objects[-1].enabled = True
+
 
 
 def evaluate_victory_condition():
