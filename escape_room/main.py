@@ -12,7 +12,7 @@ autosave_enabled = True
 STARTING_GAME_TIME = 30
 game_time = STARTING_GAME_TIME
 loss_counter = 0
-version_string = "0.2.1"
+version_string = "0.3.1"
 
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
@@ -24,7 +24,7 @@ GAME_MENU_STATE = 3
 EXIT_GAME_STATE = 4
 
 # Save game constants
-SAVE_GAME_VERSION = "v1"
+SAVE_GAME_VERSION = "v2"
 SAVE_GAME_VALIDATION_STRING = "JFERSG"
 SAVE_GAME_VALIDATION_LENGTH = len(
     SAVE_GAME_VALIDATION_STRING) + len(SAVE_GAME_VERSION)
@@ -107,6 +107,15 @@ def save_game(manual_save):
 
     filename += ".ersg"
 
+    # this block should allow backups *and* keep save file corruption from happening.
+    if os.path.exists(filename):
+        backup_filename = filename + ".backup"
+        
+        if os.path.exists(backup_filename):
+            os.remove(backup_filename)
+        
+        os.rename(filename, backup_filename)
+        
     f = open(filename, "w")
     f.write(
         f"{SAVE_GAME_VALIDATION_STRING}{SAVE_GAME_VERSION}\n{str(game_time)}\n")
@@ -125,6 +134,10 @@ def save_game(manual_save):
     for thing in inventory:
         f.write(thing)
         f.write("\n")
+    
+    global loss_counter
+
+    f.write(str(loss_counter) + "\n")
     f.write("\n\n")
     f.close()
 
@@ -134,7 +147,8 @@ def save_game(manual_save):
 PARSE_SAVE_GAME_TIME = 0
 PARSE_SAVE_GAME_INTERACTIBLES = 1
 PARSE_SAVE_GAME_INVENTORY = 2
-END_PARSE = 3
+PARSE_SAVE_GAME_LOSS_COUNTER = 3
+END_PARSE = 4
 
 
 def validate_game_time(time):
@@ -155,6 +169,7 @@ def validate_interactibles(interactibles):
             for thing2 in interactive_objects:
                 if thing == thing2.name or thing == thing2.changes_to:
                     found = True
+
                     if thing2.number_of_levels < interactibles[thing][0]:
                         print(f"Bad current level for {thing}.")
                         return False
@@ -194,7 +209,7 @@ def apply_parsed_game(saved_game):
 
     for thing in saved_game.interactibles:
         for thing2 in interactive_objects:
-            if thing == thing2.name or thing == thing2.changes_to:
+            if thing == thing2.default_name or thing == thing2.name or thing == thing2.changes_to:
                 thing2.enabled = saved_game.interactibles[thing][1] == 1
                 thing2.current_level = saved_game.interactibles[thing][0]
                 break
@@ -204,6 +219,8 @@ def apply_parsed_game(saved_game):
         if thing.change_level > -1 and thing.current_level >= thing.change_level:
             thing.name = thing.changes_to
             thing.selector = thing.selector_changes_to
+        else:
+            thing.name = thing.default_name
 
     inventory = saved_game.inventory
 
@@ -275,6 +292,7 @@ def parse_and_restore_save_file(saved_string):
                     return False
 
                 last_comma_position += 1
+
                 if comma_position == last_comma_position:
                     print(
                         "Save game is missing a interatible object level, aborting load.")
@@ -312,15 +330,27 @@ def parse_and_restore_save_file(saved_string):
                 continue
             else:
                 parsed_game.inventory.append(working_string)
+        elif parse_mode == PARSE_SAVE_GAME_LOSS_COUNTER:
+            if not working_string.isnumeric():
+                print(f"Save file has an invalid secret bit of data. Cannot parse, aborting.")
+                return False
+
+            global loss_counter
+            loss_counter = int(working_string)
+
+            position = next_position + 1
+
         else:
-            print("WOKKA!  You've hit a bug!  FERNANDEZ messed up.")
+            print("WOKKA!  You've hit a bug in the load game code!  Please report at https://github.com/JohnAFernandez/python_porfolio/issues")
             return False
 
         section_count += 1
+
         if section_count >= total_from_file:
             total_from_file = 0
             section_count = 0 
             parse_mode += 1
+
             if parse_mode >= END_PARSE:
                 break
 
@@ -329,13 +359,17 @@ def parse_and_restore_save_file(saved_string):
     if not validate_game_time(parsed_game.game_time):
         print("Parsed game time is invalid, aborting load.") 
         return False
+    
     if not validate_interactibles(parsed_game.interactibles): 
         print("Parsed interactible objects are invalid, aborting load.")
         return False
+    
     if not validate_inventory(parsed_game.inventory): 
         print("Parsed inventory is invalid, aborting load.")
         return False
 
+    print("\nLoad Successful!")
+    print("\n\n")
     # Success is guaranteed at this point!
     reset_game()
     apply_parsed_game(parsed_game)
@@ -382,9 +416,11 @@ def load_game():
         print(f"{x + 1}) {item[0:len(item)-5]}")
         x += 1
 
-    if incorrect_version_files > 0:
+    if incorrect_version_files > 1:
         print(
-            f"\nPlease note that {incorrect_version_files} files were found that could not be opened.")
+            f"\nPlease note that {incorrect_version_files} files were found that could not be opened because it is either the wrong save game version, or corrupt.")
+    elif incorrect_version_files > 0:
+        print(f"Please note that {incorrect_version_files} file was found that could not be opened because it is either the wrong save game version, or corrupt..")
 
     fail_count = 0
 
@@ -441,20 +477,37 @@ def do_in_game_menu():
                 if backup_save_choice.lower() == "y" or backup_save_choice.lower() == "yes":
                     saved = save_game(True)
                     if not saved:
-                        print("Aborted load due to save failure. (not supported yet)")
+                        print("Aborted load due to save failure.")
                         # save function will have its own warning message.
                         continue
 
-            success = load_game()
+            game_state_exit = False
 
-            if success:
-                go_to_gameplay()
-                break
-            else:
-                while True:
+            success = load_game()
+            fail_count = 0
+
+            while True:
+
+                if success:
+                    go_to_gameplay()
+                    game_state_exit = True
+                    break
+                else:
                     retry_try = input("Try another file? (Y if yes)")
-                    if not retry_try.lower() == "y":
+
+                    if retry_try.lower() == "y":
+                        success = load_game()
+                        game_state_exit = True
                         break
+                    elif retry_try.lower() == "n":
+                        break
+                    else:
+                        fail_count += 1
+                        if fail_count > 3:
+                            break
+
+            if game_state_exit:
+                break
 
         # options screen -- lol, What options???
         elif user_choice.lower() == "c":
@@ -643,7 +696,7 @@ def do_main_menu():
 def do_initial_gameplay_description():
     print("")
     print("")
-    print("A cacophonos klaxon awakens you!")
+    print("A cacophonous klaxon awakens you!")
     print("")
     print("Disoriented, you are greeted by unfamiliar surroundings.")
     print("As far as you can tell, you have never been in this room before.")
@@ -673,15 +726,17 @@ def init():
 # reset and reinitialize the game state
 def reset_game():
     global game_time
-
-    game_data_initialized = True
+    global interactive_objects
+    global inventory
 
     game_time = STARTING_GAME_TIME
 
     interactive_objects.clear()
+    inventory.clear()
 
     # set up the broken doonknob
     interactive_objects.append(interactive_object())
+    interactive_objects[-1].default_name = "Broken Door"
     interactive_objects[-1].name = "Broken Door"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "B"
@@ -704,6 +759,7 @@ def reset_game():
     # set up the chest
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Chest"
+    interactive_objects[-1].default_name = "Chest"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "C"
     interactive_objects[-1].number_of_levels = 2
@@ -724,6 +780,7 @@ def reset_game():
     # set up the dresser parent object
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Dresser"
+    interactive_objects[-1].default_name = "Dresser"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "D"
     interactive_objects[-1].number_of_levels = 1
@@ -742,6 +799,7 @@ def reset_game():
     # set up drawer 1
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 1"
+    interactive_objects[-1].default_name = "Drawer 1"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "1"
     interactive_objects[-1].number_of_levels = 2
@@ -761,6 +819,7 @@ def reset_game():
     # set up drawer 2
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 2"
+    interactive_objects[-1].default_name = "Drawer 2"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "2"
     interactive_objects[-1].number_of_levels = 1
@@ -777,6 +836,7 @@ def reset_game():
     # set up drawer 3
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Drawer 3"
+    interactive_objects[-1].default_name = "Drawer 3"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "3"
     interactive_objects[-1].number_of_levels = 1
@@ -793,6 +853,7 @@ def reset_game():
     # set up the ceiling fan
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Fan"
+    interactive_objects[-1].default_name = "Fan"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "F"
     interactive_objects[-1].number_of_levels = 2
@@ -814,6 +875,7 @@ def reset_game():
     # set up the hole in
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Hole in the Wall"
+    interactive_objects[-1].default_name = "Hole in the Wall"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "H"
     interactive_objects[-1].number_of_levels = 2
@@ -840,6 +902,7 @@ def reset_game():
     # set up the lamp
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Lamp"
+    interactive_objects[-1].default_name = "Lamp"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "L"
     interactive_objects[-1].number_of_levels = 2
@@ -887,6 +950,7 @@ def reset_game():
     # set up the step ladder
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Step Ladder"
+    interactive_objects[-1].default_name = "Step Ladder"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "S"
     interactive_objects[-1].number_of_levels = 1
@@ -902,6 +966,7 @@ def reset_game():
     # set up the tv
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "TV"
+    interactive_objects[-1].default_name = "TV"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "T"
     interactive_objects[-1].number_of_levels = 1
@@ -974,7 +1039,7 @@ def manage_iteractable_use(i):
                 # print("False 3")
 
                 print("WOKKA! Missing success message. Current level is " +
-                      str(interactive_objects[i].current_level))
+                      str(interactive_objects[i].current_level) + ". Please report to https://github.com/JohnAFernandez/python_porfolio/issues")
 
             # if we have a valid reward
             if interactive_objects[i].rewards.__len__() > interactive_objects[i].current_level and interactive_objects[i].rewards[interactive_objects[i].current_level] != "":
@@ -1008,7 +1073,7 @@ def manage_iteractable_use(i):
             else:
                 # print("false 6")
                 print(
-                    f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}")
+                    f"WOKKA! Missing failure message. Current level is {interactive_objects[i].current_level}. Please report to https://github.com/JohnAFernandez/python_porfolio/issues")
     else:
         # print("false 1")
         print(interactive_objects[i].messages[-1])
@@ -1084,7 +1149,7 @@ def list_alternate_choice():
     drawer = get_interactive_object("Drawer 1")
 
     if drawer < 0 or drawer > len(interactive_objects):
-        print("WOKKA! MISSING Object.  If you're the player, you're screwed!")
+        print("WOKKA! MISSING Object.  Please report to at https://github.com/JohnAFernandez/python_porfolio/issues")
         return
 
     # has the journal been fully explored?
@@ -1120,12 +1185,13 @@ def escape_game_messages():
 
 
 def lose_game_messages():
-    print("Your time is up. You experienec a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
+    print("Your time is up. You experience a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
     input("\nPress enter ...")
 
 
 def do_rejection_loop():
     global game_time
+    global loss_counter
 
     print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, past and relationships until the last time you fell asleep...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
@@ -1143,11 +1209,11 @@ def do_rejection_loop():
 
     print("\nYou sit down on the ground and cross your arms.\n\n\t\"You can forget it.  I'm not playing anymore.\"\n")
     print("You say this with a steady voice, and you fight hard to keep fear from marking your features.\n")
-    print("Nothing happens.")
 
     total_wait_time = 1
 
     while total_wait_time < 7 and game_time > 5:
+        print("Nothing happens.")
         choice2 = input("\nKeep waiting? (Y/N)")
 
         if (choice2.lower() == "y"):
@@ -1213,7 +1279,7 @@ def do_gameplay(new_game):
 
                 if (i < 0):
                     print(
-                        "You get confused -- The radiation must be getting to you. You resolve to be more deliberate.")
+                        "You get confused -- The radiation must be getting to you. You resolve to be more deliberate.\n")
                     continue
 
                 manage_iteractable_use(i)
@@ -1226,7 +1292,6 @@ def do_gameplay(new_game):
 
 def mini_game_state_machine():
 
-    global last_game_state
     last_game_state = GAME_START_STATE
     global next_game_state
     next_game_state = MAIN_MENU_STATE
