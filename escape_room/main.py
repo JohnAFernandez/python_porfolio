@@ -12,7 +12,7 @@ autosave_enabled = True
 STARTING_GAME_TIME = 30
 game_time = STARTING_GAME_TIME
 loss_counter = 0
-version_string = "0.3.1"
+version_string = "0.3.2"
 
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
