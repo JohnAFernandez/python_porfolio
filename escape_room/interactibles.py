@@ -1,7 +1,6 @@
 class interactive_object:
     def __init__(self):
         # tracker "flags", iow what has happened to this object already?
-        # !! FIX ME! Second game has new name instead of old name....
         self.default_name = ""
         self.name = ""
         self.selector = ""

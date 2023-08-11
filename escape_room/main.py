@@ -12,7 +12,7 @@ autosave_enabled = True
 STARTING_GAME_TIME = 30
 game_time = STARTING_GAME_TIME
 loss_counter = 0
-version_string = "0.3.2"
+version_string = "1.0.0"
 
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
@@ -637,7 +637,7 @@ def display_main_menu():
 
     print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
-    print(f"\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Tips\n\tE) Credits\n\tF) Quit\n\n\nBeta Version {version_string}\n")
+    print(f"\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Tips\n\tE) Credits\n\tF) Quit\n\n\nVersion {version_string}\n")
 
 
 def display_credits():
@@ -645,7 +645,7 @@ def display_credits():
     print("\t\t\t///ESCAPE ROOM\\\\\\")
     print("")
     print("\n\nConcept, Programming, and Writing by John A Fernandez, aka Singularitus")
-    print(f"\nThis is a Beta release, version {version_string}")
+    print(f"\nVersion {version_string}")
     print("If you enjoyed this game and want to support the developer go to:\npaypal.me/singularitus")
     input("\n\nPress Enter...")
 
@@ -750,7 +750,7 @@ def reset_game():
     interactive_objects[-1].messages.append(
         "You try to turn the doorknob, but the door is locked!")
     interactive_objects[-1].messages.append(
-        "You open the door and exit the room!")
+        "You open the door...")
     interactive_objects[-1].enabled = True
     interactive_objects[-1].selector_changes_to = "B"
     interactive_objects[-1].changes_to = "Door"
@@ -923,6 +923,7 @@ def reset_game():
     # set up the wardrobe, a dummy object
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Ottoman"
+    interactive_objects[-1].default_name = "Ottoman"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "O"
     interactive_objects[-1].number_of_levels = 1
@@ -936,6 +937,7 @@ def reset_game():
     # set up the picture frame, a dummy object
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Picture Frame"
+    interactive_objects[-1].default_name = "Picture Frame"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "P"
     interactive_objects[-1].number_of_levels = 2
@@ -982,6 +984,7 @@ def reset_game():
     # set up the ward drobe, a dummy object
     interactive_objects.append(interactive_object())
     interactive_objects[-1].name = "Wardrobe"
+    interactive_objects[-1].default_name = "Wardrobe"
     # print("Doing " + interactive_objects[-1].name)
     interactive_objects[-1].selector = "W"
     interactive_objects[-1].number_of_levels = 1
@@ -1179,8 +1182,8 @@ def list_inventory_objects():
 
 
 def escape_game_messages():
-    print("As you cross the door's threshold, you open the door and see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
-    print("\nSuddenly, you black out.")
+    print("Past the door, you see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
+    print("\nA gas hisses out of the walls all around you, and suddenly, you black out.")
     input("\nPress enter ...")
 
 
