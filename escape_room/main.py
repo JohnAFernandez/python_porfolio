@@ -8,6 +8,7 @@ inventory = []
 end_game_object = "Door"
 
 autosave_enabled = True
+clear_history = True
 
 STARTING_GAME_TIME = 30
 game_time = STARTING_GAME_TIME
@@ -70,7 +71,11 @@ def go_to_in_game_menu():
 
 # display the in-game menu text
 def display_in_game_menu():
-    os.system('clear')
+    global clear_history
+
+    if clear_history:
+        os.system('clear')
+
     print("")
     print("Game Menu")
     print("")
@@ -224,6 +229,64 @@ def apply_parsed_game(saved_game):
             thing.name = thing.default_name
 
     inventory = saved_game.inventory
+
+def load_config():
+    global autosave_enabled
+    global clear_history
+
+    try:
+        f = open(".options", "r")
+        saved_string = f.read()
+        position = saved_string.find("\n")
+
+        working_string = saved_string[0: position]
+
+        # nesting is a little easier than a full state machine for two options.
+        if not working_string.isnumeric():
+            print("Options config file has bad contents, aborting options load.")
+        else:
+            result = int(working_string)
+            if result == 0:
+                autosave_enabled = False 
+            elif result == 1:
+                autosave_enabled = True
+            
+            working_string = saved_string[position + 1: len(saved_string)]
+            if not working_string.isnumeric():
+                print("Options config file has bad contents, aborting options load.")
+            else:
+                result = int(working_string)
+                if result == 0:
+                    autosave_enabled = False 
+                elif result == 1:
+                    autosave_enabled = True
+
+
+    # really not a big deal if this fails
+    except:
+        pass
+
+def save_config():
+    filename = ".options"
+
+    # this block should allow backups *and* keep save file corruption from happening.
+    if os.path.exists(filename):
+        os.remove(filename)
+                
+    f = open(filename, "w")
+
+    global autosave_enabled
+    global clear_history
+
+    if autosave_enabled:
+        f.write("1\n")
+    else:
+        f.write("0\n")
+
+    if clear_history:
+        f.write("1\n")
+    else:
+        f.write("0\n")
 
 
 def parse_and_restore_save_file(saved_string):
@@ -426,7 +489,7 @@ def load_game():
     fail_count = 0
 
     while True:
-        choice = input("\n")
+        choice = input("\n\nChoice: ")
         if choice.isnumeric():
             # user's choice is 1 indexed
             file_index = int(choice) - 1
@@ -437,7 +500,8 @@ def load_game():
         fail_count += 1
 
         if fail_count > 3:
-            print("User did not choose a valid file, aborting load.")
+            print("Invalid files chosen, aborting load.")
+            input("")
             return False
 
     filename = the_list[file_index]
@@ -466,6 +530,7 @@ def do_in_game_menu():
         if user_choice.lower() == "a":
             invalid_counter = 0
             saved = save_game(True)
+            display_in_game_menu()
 
         # load the game
         elif user_choice.lower() == "b":
@@ -510,6 +575,8 @@ def do_in_game_menu():
             if game_state_exit:
                 break
 
+            display_in_game_menu()
+
         # options screen -- lol, What options???
         elif user_choice.lower() == "c":
             invalid_counter = 0
@@ -519,6 +586,7 @@ def do_in_game_menu():
         # display some tips...
         elif user_choice.lower() == "d":
             do_help_blurb()
+            display_in_game_menu()
 
         # End the Current game
         elif user_choice.lower() == "e":
@@ -595,8 +663,19 @@ def display_options_menu():
     else:
         print("Autosave is off")
         print("\tA) Enable autosave")
+
     print("")
-    print("B) Go Back")
+
+    if clear_history:
+        print("Clear history is on")
+        print("\tB) Disable clear history")
+    else:
+        print("Clear History is off")
+        print("\tB) Enable clear history")
+
+    print("")
+
+    print("C) Go Back")
     print("")
 
 
@@ -604,6 +683,7 @@ def display_options_menu():
 def do_options_menu():
     invalid_counter = 0
     global autosave_enabled
+    global clear_history
 
     while True:
         display_options_menu()
@@ -621,7 +701,19 @@ def do_options_menu():
                 print("")
                 print("Autosave disabled")
 
-        elif user_choice.lower() == "b":
+        if user_choice.lower() == "b":
+            invalid_counter = 0
+            clear_history = (not clear_history)
+
+            if (clear_history):
+                print("")
+                print("Clear history enabled")
+
+            else:
+                print("")
+                print("Clear history disabled")
+
+        elif user_choice.lower() == "c":
             break
 
         else:
@@ -636,18 +728,22 @@ def do_options_menu():
 
 def display_main_menu():
     global version_string
+    global clear_history
 
-    os.system('clear')
-    os.system('clear')
-    os.system('clear')
+    if clear_history:
+        os.system('clear')
+        os.system('clear')
+        os.system('clear')
     
-    print("\n\n\n\n\n\n\n\n")
-    print("\t\t///ESCAPE ROOM\\\\\\")
+    print("\n\n\t\t///ESCAPE ROOM\\\\\\")
     print(f"\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Tips\n\tE) Credits\n\tF) Quit\n\n\nVersion {version_string}\n")
 
 
 def display_credits():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
+
     print("\n\n")
     print("\t\t\t///ESCAPE ROOM\\\\\\")
     print("")
@@ -658,7 +754,9 @@ def display_credits():
 
 
 def do_help_blurb():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
     print("\n\nMost menus will have a letter or number to select an object or menu item to interact with. But, unlike many adventure games, your character will be able to figure out if an item is usable in specific situations by themself.")
     choice = input("\n\nWould you like further hints (Y/N)")
     if choice.lower() == "y":
@@ -702,7 +800,10 @@ def do_main_menu():
 
 
 def do_initial_gameplay_description():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
+    
     print("")
     print("")
     print("A cacophonous klaxon awakens you!")
@@ -938,7 +1039,7 @@ def reset_game():
     interactive_objects[-1].number_of_levels = 1
     interactive_objects[-1].keys.append("Screwdriver")
     interactive_objects[-1].messages.append(
-        "In the middle of the room is a beat up ottoman.  Nothing is on top or below. You cannot think of any other hiding place besides inside it, but you lack a tool to attempt it.")
+        "In the middle of the room is a beat up ottoman.  Nothing is on top or below. You cannot think of any other hiding place besides inside it, but you lack a tool to attempt breaking it open.")
     interactive_objects[-1].messages.append( "In desperation, you pierce the ottoman with the screwdriver and shred through the apholstery. It contains only feathers.")
     interactive_objects[-1].enabled = True
     interactive_objects[-1].self_disables = True
@@ -1002,6 +1103,7 @@ def reset_game():
         "In a corner is an old-fashioned wardrobe. You open it to search it, but it is empty.")
     interactive_objects[-1].messages.append(  "Looking at the wardrobe again, even the surfaces of it are completely smooth. There is also nothing below or behind it.")
     interactive_objects[-1].enabled = True
+    interactive_objects[-1].self_disables = True
 
 
 
@@ -1155,17 +1257,22 @@ def list_interactible_objects():
         if thing.enabled == True:
             print("\t" + thing.selector + ") " + thing.name)
 
-
-def list_alternate_choice():
+def alternate_choice_available():
     global interactive_objects
     drawer = get_interactive_object("Drawer 1")
 
     if drawer < 0 or drawer > len(interactive_objects):
         print("WOKKA! MISSING Object.  Please report to at https://github.com/JohnAFernandez/python_porfolio/issues")
-        return
+        return False
 
     # has the journal been fully explored?
     if interactive_objects[drawer].current_level == interactive_objects[drawer].number_of_levels:
+        return True
+    else:
+        return False
+
+def list_alternate_choice():
+    if alternate_choice_available():
         print("\n\tJ) Consider the journal")
 
 
@@ -1191,14 +1298,20 @@ def list_inventory_objects():
 
 
 def escape_game_messages():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
+
     print("Past the door, you see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
     print("\nA gas hisses out of the walls all around you, and suddenly, you black out.")
     input("\nPress enter ...")
 
 
 def lose_game_messages():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
+
     print("Your time is up. You experience a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
     input("\nPress enter ...")
 
@@ -1206,8 +1319,11 @@ def lose_game_messages():
 def do_rejection_loop():
     global game_time
     global loss_counter
+    global clear_history
 
-    os.system('clear')
+    if clear_history:
+        os.system('clear')
+
     print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, past and relationships until the last time you fell asleep...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
     input("\nPress enter...")
@@ -1242,7 +1358,7 @@ def do_rejection_loop():
             print(f"In your indecisiveness, another minute passes. {game_time} minutes until lethal dose")
 
     print(f"\n\nThe klaxon and recorded voice stop playing.  A new voice speaks.\n\n\"Well, it looks like you figured it out. Now we can finally end this experiment.  It took you {loss_counter + 1} tries to figure it out. But you're free to go.\"")
-    print("\nThe room is flooded with sunlight as one of the walls retracts into the ground. And a car - your car is waiting with its door open, your phone ready to used in its holder.\n\n\tThis time, you are truly free...")
+    print("\nThe room is flooded with sunlight as one of the walls retracts into the ground. And a car - your car - is waiting with its door open, your phone ready to used in its holder.\n\n\tThis time, you are truly free...")
     input("\n...")
 
     reset_game()
@@ -1273,11 +1389,14 @@ def do_gameplay(new_game):
             break
 
         while True:
-            os.system('clear')
-            os.system('clear')
-            os.system('clear')
-            os.system('clear')
-            os.system('clear')
+            global clear_history
+
+            # a lot of text can appear here
+            if clear_history:
+                os.system('clear')
+                os.system('clear')
+                os.system('clear')
+
             list_interactible_objects()
             list_alternate_choice()
             list_inventory_objects()
@@ -1289,7 +1408,7 @@ def do_gameplay(new_game):
                 game_time += 1  # slight hack to enable us to exit to the in-game menu
                 exit_state = True
                 break
-            elif gameplay_choice.lower() == "j":
+            elif gameplay_choice.lower() == "j" and alternate_choice_available():
                 if do_rejection_loop():
                     go_to_main_menu()
                     exit_state = True
@@ -1300,6 +1419,7 @@ def do_gameplay(new_game):
                 if (i < 0):
                     print(
                         "You get confused -- The radiation must be getting to you. You resolve to be more deliberate.\n")
+                    input("...")
                     continue
 
                 manage_iteractable_use(i)
