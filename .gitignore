@@ -1,3 +1,4 @@
 # escape room save games should not be added to the repository.
 *.ersg
 *.ersg.backup
+.options

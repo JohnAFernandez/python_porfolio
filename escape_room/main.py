@@ -13,7 +13,7 @@ clear_history = True
 STARTING_GAME_TIME = 30
 game_time = STARTING_GAME_TIME
 loss_counter = 0
-version_string = "1.0.1"
+version_string = "1.1.0"
 
 # Game State Management Variables
 # we don't need a proper game state machine, just a helper variable to tell run_game_state where to go next.
@@ -651,7 +651,10 @@ def do_in_game_menu():
 
 # display the options menu options.  Because of enable/disable, each option will need logic attached
 def display_options_menu():
-    os.system('clear')
+    global clear_history
+    if clear_history:
+        os.system('clear')
+
     print("")
     print("Options:")
     print("")
@@ -693,6 +696,8 @@ def do_options_menu():
             invalid_counter = 0
             autosave_enabled = (not autosave_enabled)
 
+            save_config()
+
             if (autosave_enabled):
                 print("")
                 print("Autosave enabled")
@@ -701,9 +706,11 @@ def do_options_menu():
                 print("")
                 print("Autosave disabled")
 
-        if user_choice.lower() == "b":
+        elif user_choice.lower() == "b":
             invalid_counter = 0
             clear_history = (not clear_history)
+
+            save_config()
 
             if (clear_history):
                 print("")
@@ -757,8 +764,8 @@ def do_help_blurb():
     global clear_history
     if clear_history:
         os.system('clear')
-    print("\n\nMost menus will have a letter or number to select an object or menu item to interact with. But, unlike many adventure games, your character will be able to figure out if an item is usable in specific situations by themself.")
-    choice = input("\n\nWould you like further hints (Y/N)")
+    print("Tips:\n\nMost menus will have a letter or number to select an object or menu item to interact with. But, unlike many adventure games, your character will be able to figure out if an item is usable in specific situations by themself.")
+    choice = input("\n\nWould you like further tips? (Y/N) ")
     if choice.lower() == "y":
         print("\n\nAnd if you feel like you've tried everything.  Why not try everything again?")
         input("\nPress enter...")
@@ -1432,6 +1439,7 @@ def do_gameplay(new_game):
 
 def mini_game_state_machine():
 
+    load_config()
     last_game_state = GAME_START_STATE
     global next_game_state
     next_game_state = MAIN_MENU_STATE
