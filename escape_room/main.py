@@ -70,6 +70,7 @@ def go_to_in_game_menu():
 
 # display the in-game menu text
 def display_in_game_menu():
+    os.system('clear')
     print("")
     print("Game Menu")
     print("")
@@ -582,6 +583,7 @@ def do_in_game_menu():
 
 # display the options menu options.  Because of enable/disable, each option will need logic attached
 def display_options_menu():
+    os.system('clear')
     print("")
     print("Options:")
     print("")
@@ -635,12 +637,17 @@ def do_options_menu():
 def display_main_menu():
     global version_string
 
+    os.system('clear')
+    os.system('clear')
+    os.system('clear')
+    
     print("\n\n\n\n\n\n\n\n")
     print("\t\t///ESCAPE ROOM\\\\\\")
     print(f"\n\tA) New Game\n\tB) Load Game\n\tC) Options\n\tD) Tips\n\tE) Credits\n\tF) Quit\n\n\nVersion {version_string}\n")
 
 
 def display_credits():
+    os.system('clear')
     print("\n\n")
     print("\t\t\t///ESCAPE ROOM\\\\\\")
     print("")
@@ -651,6 +658,7 @@ def display_credits():
 
 
 def do_help_blurb():
+    os.system('clear')
     print("\n\nMost menus will have a letter or number to select an object or menu item to interact with. But, unlike many adventure games, your character will be able to figure out if an item is usable in specific situations by themself.")
     choice = input("\n\nWould you like further hints (Y/N)")
     if choice.lower() == "y":
@@ -694,6 +702,7 @@ def do_main_menu():
 
 
 def do_initial_gameplay_description():
+    os.system('clear')
     print("")
     print("")
     print("A cacophonous klaxon awakens you!")
@@ -1182,12 +1191,14 @@ def list_inventory_objects():
 
 
 def escape_game_messages():
+    os.system('clear')
     print("Past the door, you see another person, just like you, frantically looking through a room identical to the one you just escaped.\n\nHe mirrors the shocked look you give him, and as the klaxon and recorded message stop, a voice declares\n\n\t\"I guess you'll just have to try again.\"")
     print("\nA gas hisses out of the walls all around you, and suddenly, you black out.")
     input("\nPress enter ...")
 
 
 def lose_game_messages():
+    os.system('clear')
     print("Your time is up. You experience a thrill of horror and cry out in frustration!\n\nAs you wait for death, the klaxon and recorded message end.  Another voice declares, \n\n\t\"I guess you'll just have to try again.\"\n\nA look of complete confusion just manages to cross your face as you black out.")
     input("\nPress enter ...")
 
@@ -1196,6 +1207,7 @@ def do_rejection_loop():
     global game_time
     global loss_counter
 
+    os.system('clear')
     print("\nYou sit and think about your situation.  You still have no memory of how you got here. You can remember your name, past and relationships until the last time you fell asleep...")
     print("\nYou know there is something off.  It feels as if someone has set all this up.  Items being scattered across a room so that you have to figure out how to escape does not make sense.")
     input("\nPress enter...")
@@ -1261,6 +1273,11 @@ def do_gameplay(new_game):
             break
 
         while True:
+            os.system('clear')
+            os.system('clear')
+            os.system('clear')
+            os.system('clear')
+            os.system('clear')
             list_interactible_objects()
             list_alternate_choice()
             list_inventory_objects()
